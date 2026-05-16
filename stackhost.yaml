@@ -1,11 +1,13 @@
-services:
-  - type: web
-    name: Questionia-Craft
+version: 1
+
+applications:
+  - name: demon_slayer_bot
+    type: web
     runtime: nodejs
-    plan: free
-    buildCommand: npm install
-    startCommand: node index.js
-    autoDeploy: true
-    envVars:
-      - key: 8732816227:AAE1WknAiPv_S5sI6JfjZf-hLyt4pb9gFYQ
-        sync: false
+    build:
+      commands:
+        - npm install
+    run:
+      command: node index.js
+    env:
+      BOT_TOKEN: 8732816227:AAE1WknAiPv_S5sI6JfjZf-hLyt4pb9gFYQ
