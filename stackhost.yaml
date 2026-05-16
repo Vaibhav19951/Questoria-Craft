@@ -10,4 +10,4 @@ applications:
     run:
       command: node index.js
     env:
-      BOT_TOKEN: 8732816227:AAE1WknAiPv_S5sI6JfjZf-hLyt4pb9gFYQ
+      BOT_TOKEN: your_bot_token_here
