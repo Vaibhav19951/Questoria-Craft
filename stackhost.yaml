@@ -2,5 +2,10 @@ runtime:
   image: node:18
 
 commands:
-  build: npm install
-  start: node index.js
+  build:
+    - npm install
+  start:
+    - node index.js
+
+env:
+  BOT_TOKEN: ${BOT_TOKEN}
