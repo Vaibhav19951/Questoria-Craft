@@ -9,4 +9,6 @@ bot.onText(/\/start/, (msg) => {
   bot.sendMessage(msg.chat.id, "⚔️ Welcome to Demon Slayer Bot");
 });
 
+require("./commands/start")(bot);
+
 console.log("Bot running...");
