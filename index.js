@@ -18,7 +18,7 @@ for (const file of commandFiles) {
   // matching exactly how we set up start.js, battle.js, etc.
   require(filePath)(bot); 
   
-  console.log(✅ Loaded: ${file});
+ console.log(`✅ Loaded: ${file}`);
 }
 
 // 2. Set the Telegram UI menu commands
