@@ -1,24 +1,15 @@
-const weapons = [
-  {
-    name: "🗡 Rusty Blade",
-    damage: 10,
-    rarity: "Common",
-  },
-  {
-    name: "⚔️ Nichirin Sword",
-    damage: 25,
-    rarity: "Rare",
-  },
-  {
-    name: "🔥 Flame Katana",
-    damage: 40,
-    rarity: "Epic",
-  },
-  {
-    name: "🌙 Moon Blade",
-    damage: 60,
-    rarity: "Legendary",
-  },
-];
+const weapons = require("../asset/weapons.js");
 
-module.exports = weapons;
+module.exports = (bot) => {
+  bot.onText(/\/weapons/, (msg) => {
+    let text = "🗡 Weapon Shop\n\n";
+
+    weapons.forEach((weapon) => {
+      text += `${weapon.id}. ${weapon.name}
+Damage: ${weapon.damage}
+Price: ${weapon.price}\n\n`;
+    });
+
+    bot.sendMessage(msg.chat.id, text);
+  });
+};

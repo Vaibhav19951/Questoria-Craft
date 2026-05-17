@@ -5,25 +5,20 @@ module.exports = (bot) => {
     const chatId = msg.chat.id;
     const weaponId = parseInt(match[1]);
 
-    const player = players[chatId];
-
-    if (!player) {
-      return bot.sendMessage(chatId, "❌ No player data found");
+    if (!players[chatId]) {
+      return bot.sendMessage(chatId, "Buy a weapon first");
     }
 
-    const weapon = player.inventory.find((w) => w.id === weaponId);
+    const weapon = players[chatId].inventory.find(
+      (w) => w.id === weaponId
+    );
 
     if (!weapon) {
-      return bot.sendMessage(chatId, "❌ You don't own this weapon");
+      return bot.sendMessage(chatId, "You don't own this weapon");
     }
 
-    player.equippedWeapon = weapon;
+    players[chatId].equippedWeapon = weapon;
 
-    bot.sendMessage(
-      chatId,
-      `⚔️ Equipped successfully!
-
-Weapon: ${weapon.name}`
-    );
+    bot.sendMessage(chatId, `Equipped ${weapon.name}`);
   });
 };

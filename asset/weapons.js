@@ -1,0 +1,88 @@
+const weapons = [
+  {
+    id: 1,
+    name: "🗡 Rusty Blade",
+    damage: 10,
+    rarity: "Common",
+    price: 100,
+  },
+  {
+    id: 2,
+    name: "⚔️ Nichirin Sword",
+    damage: 25,
+    rarity: "Rare",
+    price: 300,
+  },
+  {
+    id: 3,
+    name: "💧 Water Katana",
+    damage: 35,
+    rarity: "Epic",
+    price: 500,
+  },
+  {
+    id: 4,
+    name: "🔥 Flame Nichirin",
+    damage: 40,
+    rarity: "Epic",
+    price: 700,
+  },
+  {
+    id: 5,
+    name: "⚡ Thunder Blade",
+    damage: 45,
+    rarity: "Epic",
+    price: 800,
+  },
+  {
+    id: 6,
+    name: "🐗 Dual Beast Swords",
+    damage: 38,
+    rarity: "Epic",
+    price: 750,
+  },
+  {
+    id: 7,
+    name: "🌫 Mist Blade",
+    damage: 50,
+    rarity: "Legendary",
+    price: 1200,
+  },
+  {
+    id: 8,
+    name: "🌸 Love Whip Blade",
+    damage: 48,
+    rarity: "Legendary",
+    price: 1150,
+  },
+  {
+    id: 9,
+    name: "🐍 Serpent Sword",
+    damage: 52,
+    rarity: "Legendary",
+    price: 1300,
+  },
+  {
+    id: 10,
+    name: "🪨 Stone Axe",
+    damage: 58,
+    rarity: "Legendary",
+    price: 1450,
+  },
+  {
+    id: 11,
+    name: "🌙 Moon Blade",
+    damage: 65,
+    rarity: "Mythic",
+    price: 1800,
+  },
+  {
+    id: 12,
+    name: "☀️ Sun Breathing Blade",
+    damage: 80,
+    rarity: "Mythic",
+    price: 2500,
+  },
+];
+
+module.exports = weapons;

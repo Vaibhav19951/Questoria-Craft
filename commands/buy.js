@@ -2,6 +2,25 @@ const weapons = require("../asset/weapons.js");
 const players = require("../data/players.js");
 
 module.exports = (bot) => {
+
+  // /buy -> show shop
+  bot.onText(/^\/buy$/, (msg) => {
+    const chatId = msg.chat.id;
+
+    let text = "🛒 BUY WEAPONS\n\n";
+
+    weapons.forEach((weapon) => {
+      text += `${weapon.id}. ${weapon.name}
+Damage: ${weapon.damage}
+Price: ${weapon.price} Gold\n\n`;
+    });
+
+    text += "Buy using: /buy weapon_id";
+
+    bot.sendMessage(chatId, text);
+  });
+
+  // /buy 2 -> purchase
   bot.onText(/\/buy (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     const weaponId = parseInt(match[1]);
@@ -30,7 +49,8 @@ module.exports = (bot) => {
       chatId,
       `✅ Purchased ${weapon.name}
 
-Use /equip ${weapon.id} to equip it`
+💰 Gold Left: ${player.gold}
+Use /equip ${weapon.id}`
     );
   });
 };
