@@ -28,7 +28,10 @@ bot.setMyCommands([
   { command: "summon", description: "Summon a character" },
   { command: "inventory", description: "View your items" },
   { command: "battle", description: "Fight a demon" },
-  { command: "profile", description: "View your profile" }
+  { command: "profile", description: "View your profile" },
+  { command: "buy", description: "shop weapons" },
+  { command: "equip", description: "equip a weapon" },
+  { command: "equip", description: "equip a weapon" }
 ]).then(() => {
   console.log("📜 Telegram menu button updated!");
 }).catch((err) => {
