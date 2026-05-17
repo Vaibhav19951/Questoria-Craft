@@ -13,22 +13,12 @@ bot.onText(/\/start/, async (msg) => {
       chatId,
       "https://kommodo.ai/i/ip5xqtnqGqXGpuQxOpkZ",
       {
-        caption: `⚔️ WELCOME TO DEMON SLAYER BOT ⚔️
-
-🔥 Collect legendary Demon Slayers  
-👹 Fight powerful demons  
-🎒 Build your inventory  
-🏆 Climb leaderboard  
-
-Use /help to begin your journey.
-
-Are you ready to become the strongest?`,
-        parse_mode: "Markdown",
+        caption: `⚔️ WELCOME TO DEMON SLAYER BOT ⚔️`,
       }
     );
   } catch (err) {
-    console.log("Error sending image:", err.message);
-    bot.sendMessage(chatId, "Start image load nahi ho paaya 😓");
+    console.log(err);
+    bot.sendMessage(chatId, "Error aa gaya start image me 😓");
   }
 });
 
