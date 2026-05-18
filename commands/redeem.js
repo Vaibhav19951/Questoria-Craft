@@ -1,5 +1,5 @@
 const mythical = require("../asset/mythical");
-const players = require("../asset/players");
+const players = require("../data/players");
 
 module.exports = (bot) => {
   bot.onText(/\/redeem (.+)/, (msg, match) => {
