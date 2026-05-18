@@ -1,4 +1,9 @@
 <h1 align="center">⚔️ Demon Slayer Telegram Bot ⚔️</h1>
+<h2 align="center">🤖 Bot Preview</h2>
+
+<p align="center">
+  <img src="https://ibb.co/jvw6pGq0" width="300">
+</p>
 
 <p align="center">
   <img src="https://media.tenor.com/0a6K9b0n4J8AAAAC/tanjiro-demon-slayer.gif" width="700">
