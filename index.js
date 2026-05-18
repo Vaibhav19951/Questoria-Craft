@@ -33,7 +33,10 @@ bot.setMyCommands([
   { command: "equip", description: "equip a weapon" },
   { command: "weapon", description: "equip a weapon" },
   { command: "addchar", description: "add the charcter" },
-  { command: "char", description: "to view the character" }
+  { command: "char", description: "to view the character" },
+  { command: "mythicalshop", description: "complete the task and redeem mythical characters" },
+  { command: "redeem", description: "redeem your favorite mythical characters" }
+
 ]).then(() => {
   console.log("📜 Telegram menu button updated!");
 }).catch((err) => {
