@@ -1,163 +1,146 @@
+const TelegramBot = require("node-telegram-bot-api");
 const players = require("../data/players");
 
-module.exports = (bot) => {
+// BOT TOKEN
+const token = "YOUR_BOT_TOKEN";
 
-  // =========================
-  // CHARACTER IMAGES
-  // =========================
-  const TANJIRO_IMG =
-    "https://i.pinimg.com/736x/76/a4/70/76a4709eac7234aaa6726c4efa40cbb9.jpg";
+// CREATE BOT
+const bot = new TelegramBot(token, {
+  polling: true
+});
 
-  const NEZUKO_IMG =
-    "https://i.pinimg.com/736x/6c/02/c9/6c02c93d3991470183f6c169d1adc64e.jpg";
+// =========================
+// IMAGES
+// =========================
+const START_IMG =
+  "https://i.pinimg.com/736x/e1/97/3e/e1973e8421e69bc09f731b60f5102d97.jpg";
 
-  // =========================
-  // START COMMAND
-  // =========================
-  bot.onText(/^\/start$/, async (msg) => {
+const TANJIRO_IMG =
+  "https://i.pinimg.com/736x/ab/26/81/ab26817caf5dbd8bd82f698f517649b7.jpg";
 
-    const chatId = msg.chat.id;
-    const userId = msg.from.id.toString();
+const NEZUKO_IMG =
+  "https://i.pinimg.com/736x/6c/02/c9/6c02c93d3991470183f6c169d1adc64e.jpg";
 
-    // Player Data
-    if (!players[userId]) {
-      players[userId] = {
-        coins: 1000,
-        gems: 0,
-        mythicalCrystals: 5,
-        cards: [],
-        gender: null,
-        character: null
-      };
-    }
+// =========================
+// START COMMAND
+// =========================
+bot.onText(/\/start/, async (msg) => {
 
-    try {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id.toString();
 
-      await bot.sendPhoto(
-        chatId,
-        "https://i.pinimg.com/736x/e1/97/3e/e1973e8421e69bc09f731b60f5102d97.jpg",
-        {
-          caption: `
-⚔️ *WELCOME TO DEMON SLAYER BOT* ⚔️
+  // Create Player
+  if (!players[userId]) {
+    players[userId] = {
+      coins: 1000,
+      gems: 0,
+      mythicalCrystals: 5,
+      cards: [],
+      character: null
+    };
+  }
 
-Choose Your Character Path 👇
+  await bot.sendPhoto(chatId, START_IMG, {
+    caption: `
+⚔️ WELCOME TO DEMON SLAYER BOT ⚔️
+
+Choose Your Beginning 👇
 `,
-          parse_mode: "Markdown",
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: "👦 Tanjiro Beginning",
-                  callback_data: "tanjio_biginning"
-                }
-              ],
-              [
-                {
-                  text: "👧 Nezuko Beginning",
-                  callback_data: "nezuko_beginning"
-                }
-              ]
-            ]
+    reply_markup: {
+      inline_keyboard: [
+        [
+          {
+            text: "👦 Tanjiro Beginning",
+            callback_data: "tanjiro"
           }
-        }
-      );
-
-    } catch (err) {
-      console.log(err);
-      bot.sendMessage(chatId, "Error aa gaya 😓");
+        ],
+        [
+          {
+            text: "👧 Nezuko Beginning",
+            callback_data: "nezuko"
+          }
+        ]
+      ]
     }
-
   });
 
+});
+
+// =========================
+// BUTTON HANDLER
+// =========================
+bot.on("callback_query", async (query) => {
+
+  const chatId = query.message.chat.id;
+  const userId = query.from.id.toString();
+  const data = query.data;
+
   // =========================
-  // CALLBACKS
+  // TANJIRO
   // =========================
-  bot.on("callback_query", async (query) => {
+  if (data === "tanjiro") {
 
-    const data = query.data;
-    const chatId = query.message.chat.id;
-    const userId = query.from.id.toString();
+    players[userId].character = "Tanjiro";
 
-    // =========================
-    // TANJIRO BEGINNING
-    // =========================
-    if (data === "tanjio_bigining") {
+    await bot.sendPhoto(chatId, TANJIRO_IMG, {
+      caption: `
+🔥 TANJIRO BEGINNING 🔥
 
-      players[userId].character = "Tanjiro Beginning";
+👦 Character: Tanjiro
+🪙 Coins: 1000
+💎 Gems: 0
+🔮 Crystals: 5
 
-      await bot.sendPhoto(
-        chatId,
-        TANJIRO_IMG,
-        {
-          caption: `
-🔥 *TANJIRO BEGINNING SELECTED* 🔥
-
-👦 Character: *Tanjiro*
-🪙 Coins: *1000*
-💎 Gems: *0*
-🔮 Mythical Crystals: *5*
-
-⚔️ Your Journey Starts Now...
+⚔️ Journey Started...
 `,
-          parse_mode: "Markdown",
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: "🌐 View Tanjiro",
-                  url: "https://kimetsu-no-yaiba.fandom.com/wiki/Tanjiro_Kamado"
-                }
-              ]
-            ]
-          }
-        }
-      );
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "🌐 View Tanjiro",
+              url: "https://kimetsu-no-yaiba.fandom.com/wiki/Tanjiro_Kamado"
+            }
+          ]
+        ]
+      }
+    });
 
-      return bot.answerCallbackQuery(query.id, {
-        text: "Tanjiro Beginning Selected!"
-      });
-    }
+    return bot.answerCallbackQuery(query.id);
+  }
 
-    // =========================
-    // NEZUKO BEGINNING
-    // =========================
-    if (data === "nezuko_begining") {
+  // =========================
+  // NEZUKO
+  // =========================
+  if (data === "nezuko") {
 
-      players[userId].character = "Nezuko Beginning";
+    players[userId].character = "Nezuko";
 
-      await bot.sendPhoto(
-        chatId,
-        NEZUKO_IMG,
-        {
-          caption: `
-🌸 *NEZUKO BEGINNING SELECTED* 🌸
+    await bot.sendPhoto(chatId, NEZUKO_IMG, {
+      caption: `
+🌸 NEZUKO BEGINNING 🌸
 
-👧 Character: *Nezuko*
-🪙 Coins: *1000*
-💎 Gems: *0*
-🔮 Mythical Crystals: *5*
+👧 Character: Nezuko
+🪙 Coins: 1000
+💎 Gems: 0
+🔮 Crystals: 5
 
-🩸 Demon Journey Begins...
+🩸 Demon Journey Started...
 `,
-          parse_mode: "Markdown",
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: "🌐 View Nezuko",
-                  url: "https://kimetsu-no-yaiba.fandom.com/wiki/Nezuko_Kamado"
-                }
-              ]
-            ]
-          }
-        }
-      );
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "🌐 View Nezuko",
+              url: "https://kimetsu-no-yaiba.fandom.com/wiki/Nezuko_Kamado"
+            }
+          ]
+        ]
+      }
+    });
 
-      return bot.answerCallbackQuery(query.id, {
-        text: "Nezuko Beginning Selected!"
-      });
-    }
+    return bot.answerCallbackQuery(query.id);
+  }
 
-  });
+});
 
-};
+console.log("Bot Running...");
