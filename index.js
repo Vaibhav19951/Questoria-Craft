@@ -97,7 +97,12 @@ bot.setMyCommands([
   { command: "char", description: "View character" },
   { command: "mythicalshop", description: "Mythical shop" },
   { command: "redeem", description: "Redeem characters" },
-  { command: "guild", description: "view guild" }
+  { command: "guild", description: "view guild" },
+  { command: "profile", description: "View your profile" },
+  { command: "guild", description: "View guild" },
+  { command: "myguild", description: "My guild info" },
+  { command: "guildlb", description: "Guild leaderboard" },
+  { command: "guide", description: "Bot guide" }
 ])
 .then(() => console.log("📜 Menu updated"))
 .catch(err => console.log("❌ Menu error:", err.message));
