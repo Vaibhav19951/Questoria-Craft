@@ -1,3 +1,5 @@
+console.log("🚀 FILE STARTED");
+console.log("TOKEN:", process.env.BOT_TOKEN);
 const TelegramBot = require("node-telegram-bot-api");
 const fs = require("fs");
 const path = require("path");
