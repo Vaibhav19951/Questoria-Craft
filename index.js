@@ -3,8 +3,38 @@ const fs = require("fs");
 const path = require("path");
 require("dotenv").config();
 
-const bot = new TelegramBot(process.env.BOT_TOKEN, {
-  polling: true,
+// =========================
+// SAFE TOKEN CHECK
+// =========================
+const TOKEN = process.env.BOT_TOKEN;
+
+if (!TOKEN) {
+  console.log("❌ BOT_TOKEN missing in environment variables!");
+  process.exit(1);
+}
+
+// =========================
+// BOT INIT (STACKHOST SAFE)
+// =========================
+const bot = new TelegramBot(TOKEN, {
+  polling: {
+    interval: 2000,
+    autoStart: true,
+    params: {
+      timeout: 10
+    }
+  }
+});
+
+// =========================
+// GLOBAL ERROR HANDLING (IMPORTANT)
+// =========================
+process.on("uncaughtException", (err) => {
+  console.log("❌ Uncaught Error:", err.message);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.log("❌ Promise Error:", err.message);
 });
 
 // =========================
@@ -12,7 +42,6 @@ const bot = new TelegramBot(process.env.BOT_TOKEN, {
 // =========================
 const commandsPath = path.join(__dirname, "commands");
 
-// check folder exists
 if (fs.existsSync(commandsPath)) {
 
   const commandFiles = fs
@@ -20,15 +49,21 @@ if (fs.existsSync(commandsPath)) {
     .filter(file => file.endsWith(".js"));
 
   for (const file of commandFiles) {
+
     const filePath = path.join(commandsPath, file);
 
-    const command = require(filePath);
+    try {
+      const command = require(filePath);
 
-    if (typeof command === "function") {
-      command(bot);
-      console.log(`✅ Loaded: ${file}`);
-    } else {
-      console.log(`⚠️ Skipped (not a function): ${file}`);
+      if (typeof command === "function") {
+        command(bot);
+        console.log(`✅ Loaded: ${file}`);
+      } else {
+        console.log(`⚠️ Skipped (not function): ${file}`);
+      }
+
+    } catch (err) {
+      console.log(`❌ Error in ${file}:`, err.message);
     }
   }
 
@@ -53,11 +88,15 @@ bot.setMyCommands([
   { command: "mythicalshop", description: "Mythical shop" },
   { command: "redeem", description: "Redeem characters" }
 ])
-.then(() => {
-  console.log("📜 Telegram menu updated!");
-})
-.catch(err => {
-  console.log("❌ Menu error:", err.message);
-});
+.then(() => console.log("📜 Menu updated"))
+.catch(err => console.log("❌ Menu error:", err.message));
 
+// =========================
+// KEEP ALIVE (STACKHOST NEED)
+// =========================
+setInterval(() => {
+  console.log("🤖 Bot alive...");
+}, 30000);
+
+// =========================
 console.log("⚔️ Bot running...");
