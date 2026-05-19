@@ -7,21 +7,38 @@ const bot = new TelegramBot(process.env.BOT_TOKEN, {
   polling: true,
 });
 
-// 1. Auto-load all command files from the /commands/ folder
+// =========================
+// SAFE COMMAND LOADER
+// =========================
 const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
 
-for (const file of commandFiles) {
-  const filePath = path.join(commandsPath, file);
-  
-  // This imports the file and immediately passes (bot) into it,
-  // matching exactly how we set up start.js, battle.js, etc.
-  require(filePath)(bot); 
-  
- console.log(`✅ Loaded: ${file}`);
+// check folder exists
+if (fs.existsSync(commandsPath)) {
+
+  const commandFiles = fs
+    .readdirSync(commandsPath)
+    .filter(file => file.endsWith(".js"));
+
+  for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
+
+    const command = require(filePath);
+
+    if (typeof command === "function") {
+      command(bot);
+      console.log(`✅ Loaded: ${file}`);
+    } else {
+      console.log(`⚠️ Skipped (not a function): ${file}`);
+    }
+  }
+
+} else {
+  console.log("⚠️ commands folder not found!");
 }
 
-// 2. Set the Telegram UI menu commands
+// =========================
+// MENU BUTTONS
+// =========================
 bot.setMyCommands([
   { command: "start", description: "Start the game" },
   { command: "help", description: "Show all commands" },
@@ -29,18 +46,18 @@ bot.setMyCommands([
   { command: "inventory", description: "View your items" },
   { command: "battle", description: "Fight a demon" },
   { command: "profile", description: "View your profile" },
-  { command: "buy", description: "shop weapons" },
-  { command: "equip", description: "equip a weapon" },
-  { command: "weapon", description: "equip a weapon" },
-  { command: "addchar", description: "add the charcter" },
-  { command: "char", description: "to view the character" },
-  { command: "mythicalshop", description: "complete the task and redeem mythical characters" },
-  { command: "redeem", description: "redeem your favorite mythical characters" }
-
-]).then(() => {
-  console.log("📜 Telegram menu button updated!");
-}).catch((err) => {
-  console.log("Failed to set menu:", err);
+  { command: "buy", description: "Shop weapons" },
+  { command: "equip", description: "Equip a weapon" },
+  { command: "addchar", description: "Add character" },
+  { command: "char", description: "View character" },
+  { command: "mythicalshop", description: "Mythical shop" },
+  { command: "redeem", description: "Redeem characters" }
+])
+.then(() => {
+  console.log("📜 Telegram menu updated!");
+})
+.catch(err => {
+  console.log("❌ Menu error:", err.message);
 });
 
 console.log("⚔️ Bot running...");
