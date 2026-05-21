@@ -106,51 +106,60 @@ const getOwnerInventory = () => {
 module.exports = (bot) => {
 
   // =========================
-  // ADD CHARACTER
+  // ADD CHARACTER TO PLAYER
   // =========================
-  bot.onText(/\/addcharacter (.+)/, (msg, match) => {
+  bot.onText(/\/addcharacter (\d+) (.+) (normal|mythical)/i, (msg, match) => {
     if (!isOwner(msg)) return;
 
-    const data = match[1].split("|");
+    const userId = match[1];
+    const character = match[2].trim();
+    const type = match[3].toLowerCase();
 
-    if (data.length < 3) {
-      return bot.sendMessage(
-        msg.chat.id,
-        "❌ Format:\n/addcharacter Name|ImageURL|Type"
-      );
+    if (!players[userId]) {
+      players[userId] = {
+        coins: 0,
+        mythicalCrystals: 0,
+        inventory: []
+      };
     }
 
-    const name = data[0].trim();
-    const image = data[1].trim();
-    const type = data[2].trim(); // assets / mythical
+    if (!players[userId].inventory) {
+      players[userId].inventory = [];
+    }
 
-    const inv = getOwnerInventory();
-
-    inv.push(`${name}|${image}|${type}`);
+    players[userId].inventory.push(`${character}|${type}`);
 
     players.save();
 
-    bot.sendMessage(msg.chat.id, `✅ Added Character: ${name}`);
+    bot.sendMessage(
+      msg.chat.id,
+      `✅ Added ${character} (${type}) to ${userId}`
+    );
   });
 
   // =========================
-  // REMOVE CHARACTER
+  // REMOVE CHARACTER FROM PLAYER
   // =========================
-  bot.onText(/\/removecharacter (.+)/, (msg, match) => {
+  bot.onText(/\/removecharacter (\d+) (.+)/i, (msg, match) => {
     if (!isOwner(msg)) return;
 
-    const name = match[1].trim();
+    const userId = match[1];
+    const character = match[2].trim();
 
-    const inv = getOwnerInventory();
+    if (!players[userId] || !players[userId].inventory) {
+      return bot.sendMessage(msg.chat.id, "❌ Player not found");
+    }
 
-    players[OWNER_ID].inventory = inv.filter(c => !c.startsWith(name + "|"));
+    players[userId].inventory =
+      players[userId].inventory.filter(c => !c.startsWith(character + "|"));
 
     players.save();
 
-    bot.sendMessage(msg.chat.id, `🗑️ Removed: ${name}`);
+    bot.sendMessage(
+      msg.chat.id,
+      `🗑️ Removed ${character} from ${userId}`
+    );
   });
-
-};
   // =========================
   // REMOVE COINS
   // =========================
