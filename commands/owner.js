@@ -1,9 +1,64 @@
 const players = require("../data/players");
 const guilds = require("../data/guild");
 
-const OWNER_ID = "PASTE_YOUR_TELEGRAM_ID";
+const OWNER_ID = "2086993762";
 
 module.exports = (bot) => {
+
+  // =========================
+  // OWNER CHECK
+  // =========================
+  const isOwner = (msg) => {
+    return msg.from.id.toString() === OWNER_ID;
+  };
+
+  // =========================
+  // OWNER PANEL
+  // =========================
+  bot.onText(/\/owner/, (msg) => {
+
+    if (!isOwner(msg)) {
+      return bot.sendMessage(
+        msg.chat.id,
+        "❌ Access denied."
+      );
+    }
+
+    bot.sendAnimation(
+      msg.chat.id,
+      "https://i.pinimg.com/originals/e2/f7/45/e2f745698b639d14dbd4c1567e5f03d6.gif",
+      {
+        caption:
+`👑 OWNER PANEL ACTIVATED 👑
+
+✅ Owner confirmed
+
+⚡ AVAILABLE COMMANDS ⚡
+
+💰 Economy
+/addcoins ID amount
+/removecoins ID amount
+/addtokens ID amount
+/removetokens ID amount
+
+🧬 Characters
+/addcharacter ID character
+/removecharacter ID character
+
+👤 Player
+/checkplayer ID
+/resetplayer ID
+
+🏰 Guild
+/deleteguild guildname
+
+🆔 Utility
+/myid`,
+        parse_mode: "Markdown"
+      }
+    );
+
+  });
 
   // =========================
   // MY ID
@@ -16,13 +71,6 @@ module.exports = (bot) => {
     );
 
   });
-
-  // =========================
-  // OWNER CHECK
-  // =========================
-  const isOwner = (msg) => {
-    return msg.from.id.toString() === OWNER_ID;
-  };
 
   // =========================
   // ADD COINS
@@ -226,7 +274,7 @@ module.exports = (bot) => {
   });
 
   // =========================
-  // VIEW PLAYER
+  // CHECK PLAYER
   // =========================
   bot.onText(/\/checkplayer (\d+)/, (msg, match) => {
 
