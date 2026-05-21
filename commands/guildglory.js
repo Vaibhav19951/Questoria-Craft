@@ -1,5 +1,4 @@
 const guilds = require("../data/guild");
-const players = require("../data/players");
 
 module.exports = (bot) => {
 
@@ -12,185 +11,48 @@ module.exports = (bot) => {
 
     bot.sendPhoto(
       chatId,
-      "YOUR_GUILD_GLORY_IMAGE_URL",
+      "https://pic-link-bot.lovable.app/i/telegram-1779356514904-618f311d.jpg",
       {
         caption:
 `🏆 GUILD GLORY SYSTEM
 
-⚔️ Earn Glory by:
-• Winning Battles
-• Guild Raids
-• Events
-• Daily Missions
+⚔️ HOW IT WORKS
 
-👥 Every member has personal contribution.
+• Glory is earned automatically
+through battles & activities.
 
-🎁 Weekly rewards are distributed
-based on YOUR own glory.
+• Every member has their own
+personal contribution.
 
-📅 Weekly Reset:
-Monday
+• Weekly rewards are distributed
+based on YOUR contribution only.
 
-🔥 DEMON SLAYER BOT 🔥`
-      }
-    );
+📅 WEEKLY RESET:
+Every Monday
 
-  });
+━━━━━━━━━━━━━━━
 
-  // =========================
-  // ADD GLORY
-  // =========================
-  bot.onText(/\/addglory (\d+)/, (msg, match) => {
+🎁 REWARDS
 
-    const chatId = msg.chat.id;
-    const userId = msg.from.id.toString();
+🏆 2000 Glory
+💰 50000 Coins
 
-    const amount = parseInt(match[1]);
+🏆 4000 Glory
+💰 100000 Coins
 
-    // =========================
-    // FIND USER GUILD
-    // =========================
-    let guild = null;
+🏆 6000 Glory
+🧬 100 Mythical Tokens
 
-    for (const name in guilds) {
+🏆 8000 Glory
+🏅 20 Guild Tokens
 
-      if (
-        guilds[name] &&
-        guilds[name].members &&
-        guilds[name].members.includes(userId)
-      ) {
+━━━━━━━━━━━━━━━
 
-        guild = guilds[name];
-        break;
+🔥 IMPORTANT
 
-      }
-
-    }
-
-    if (!guild) {
-      return bot.sendMessage(
-        chatId,
-        "❌ You are not in a guild."
-      );
-    }
-
-    // =========================
-    // SAFE SYSTEM
-    // =========================
-    if (!guild.glory) {
-      guild.glory = 0;
-    }
-
-    if (!guild.memberGlory) {
-      guild.memberGlory = {};
-    }
-
-    if (!guild.memberGlory[userId]) {
-      guild.memberGlory[userId] = 0;
-    }
-
-    // =========================
-    // ADD GLORY
-    // =========================
-    guild.glory += amount;
-
-    guild.memberGlory[userId] += amount;
-
-    guilds.save();
-
-    bot.sendPhoto(
-      chatId,
-      "YOUR_GUILD_GLORY_IMAGE_URL",
-      {
-        caption:
-`✨ GLORY ADDED
-
-🏰 Guild:
-${guild.name}
-
-👤 Player:
-${msg.from.first_name}
-
-⚔️ Added Glory:
-${amount}
-
-🏆 Your Total Glory:
-${guild.memberGlory[userId]}
-
-🔥 Guild Total Glory:
-${guild.glory}
-
-🎁 Weekly rewards depend on
-your personal contribution.
-
-⚔️ DEMON SLAYER BOT ⚔️`
-      }
-    );
-
-  });
-
-  // =========================
-  // MY GLORY
-  // =========================
-  bot.onText(/\/myglory/, (msg) => {
-
-    const chatId = msg.chat.id;
-    const userId = msg.from.id.toString();
-
-    let guild = null;
-
-    for (const name in guilds) {
-
-      if (
-        guilds[name] &&
-        guilds[name].members &&
-        guilds[name].members.includes(userId)
-      ) {
-
-        guild = guilds[name];
-        break;
-
-      }
-
-    }
-
-    if (!guild) {
-      return bot.sendMessage(
-        chatId,
-        "❌ You are not in a guild."
-      );
-    }
-
-    if (!guild.memberGlory) {
-      guild.memberGlory = {};
-    }
-
-    const userGlory =
-      guild.memberGlory[userId] || 0;
-
-    bot.sendPhoto(
-      chatId,
-      "https://pic-link-bot.lovable.app/i/telegram-1779356514904-618f311d.jpg",
-      {
-        caption:
-`🏆 YOUR GUILD GLORY
-
-🏰 Guild:
-${guild.name}
-
-👤 Player:
-${msg.from.first_name}
-
-⚔️ Your Glory:
-${userGlory}
-
-🔥 Guild Total Glory:
-${guild.glory}
-
-📅 Rewards are distributed weekly.
-
-🎁 More contribution
-= Better rewards.
+• No contribution = No rewards
+• More Glory = Better rewards
+• Top contributors earn more
 
 ⚔️ DEMON SLAYER BOT ⚔️`
       }
