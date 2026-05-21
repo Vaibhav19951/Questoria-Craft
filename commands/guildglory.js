@@ -1,132 +1,198 @@
 const guilds = require("../data/guild");
+const players = require("../data/players");
 
 module.exports = (bot) => {
 
   // =========================
-  // ADD GLORY
+  // GUILD REWARDS PANEL
   // =========================
-  bot.onText(/\/addglory (.+) (\d+)/, (msg, match) => {
+  bot.onText(/\/guildrewards/, (msg) => {
 
     const chatId = msg.chat.id;
 
-    const guildName = match[1];
-    const amount = parseInt(match[2]);
+    bot.sendPhoto(
+      chatId,
+      "YOUR_GUILD_GLORY_IMAGE_URL",
+      {
+        caption:
+`🏆 GUILD GLORY SYSTEM
 
-    const guild = guilds[guildName];
+⚔️ Earn Glory by:
+• Winning Battles
+• Guild Raids
+• Events
+• Daily Missions
+
+👥 Every member has personal contribution.
+
+🎁 Weekly rewards are distributed
+based on YOUR own glory.
+
+📅 Weekly Reset:
+Monday
+
+🔥 DEMON SLAYER BOT 🔥`
+      }
+    );
+
+  });
+
+  // =========================
+  // ADD GLORY
+  // =========================
+  bot.onText(/\/addglory (\d+)/, (msg, match) => {
+
+    const chatId = msg.chat.id;
+    const userId = msg.from.id.toString();
+
+    const amount = parseInt(match[1]);
+
+    // =========================
+    // FIND USER GUILD
+    // =========================
+    let guild = null;
+
+    for (const name in guilds) {
+
+      if (
+        guilds[name] &&
+        guilds[name].members &&
+        guilds[name].members.includes(userId)
+      ) {
+
+        guild = guilds[name];
+        break;
+
+      }
+
+    }
 
     if (!guild) {
       return bot.sendMessage(
         chatId,
-        "❌ Guild not found."
+        "❌ You are not in a guild."
       );
     }
 
+    // =========================
+    // SAFE SYSTEM
+    // =========================
+    if (!guild.glory) {
+      guild.glory = 0;
+    }
+
+    if (!guild.memberGlory) {
+      guild.memberGlory = {};
+    }
+
+    if (!guild.memberGlory[userId]) {
+      guild.memberGlory[userId] = 0;
+    }
+
+    // =========================
+    // ADD GLORY
+    // =========================
     guild.glory += amount;
 
-    let rewards = "";
-
-    // =========================
-    // 2000 GLORY REWARD
-    // =========================
-    if (
-      guild.glory >= 2000 &&
-      !guild.rewardClaimed[2000]
-    ) {
-
-      guild.vault.coins += 50000;
-
-      guild.rewardClaimed[2000] = true;
-
-      rewards +=
-`\n🎁 2000 Glory Reward
-💰 +50000 Coins\n`;
-    }
-
-    // =========================
-    // 4000 GLORY REWARD
-    // =========================
-    if (
-      guild.glory >= 4000 &&
-      !guild.rewardClaimed[4000]
-    ) {
-
-      guild.vault.coins += 100000;
-
-      guild.rewardClaimed[4000] = true;
-
-      rewards +=
-`\n🎁 4000 Glory Reward
-💰 +100000 Coins\n`;
-    }
-
-    // =========================
-    // 6000 GLORY REWARD
-    // =========================
-    if (
-      guild.glory >= 6000 &&
-      !guild.rewardClaimed[6000]
-    ) {
-
-      guild.vault.mythicalTokens += 100;
-
-      guild.rewardClaimed[6000] = true;
-
-      rewards +=
-`\n🎁 6000 Glory Reward
-🧬 +100 Mythical Tokens\n`;
-    }
-
-    // =========================
-    // 8000 GLORY REWARD
-    // =========================
-    if (
-      guild.glory >= 8000 &&
-      !guild.rewardClaimed[8000]
-    ) {
-
-      guild.guildTokens += 20;
-
-      guild.rewardClaimed[8000] = true;
-
-      rewards +=
-`\n👑 FINAL GUILD REWARD
-🏅 +20 Guild Tokens\n`;
-    }
+    guild.memberGlory[userId] += amount;
 
     guilds.save();
 
     bot.sendPhoto(
       chatId,
-      "https://pic-link-bot.lovable.app/i/telegram-1779355527219-44f9fd4e.jpg",
+      "YOUR_GUILD_GLORY_IMAGE_URL",
       {
         caption:
-`✨ Glory Added Successfully
+`✨ GLORY ADDED
 
 🏰 Guild:
-${guildName}
+${guild.name}
 
-🏆 Total Glory:
+👤 Player:
+${msg.from.first_name}
+
+⚔️ Added Glory:
+${amount}
+
+🏆 Your Total Glory:
+${guild.memberGlory[userId]}
+
+🔥 Guild Total Glory:
 ${guild.glory}
 
-🎯 Reward Progress
+🎁 Weekly rewards depend on
+your personal contribution.
 
-2000 Glory → 50000 Coins
-4000 Glory → 100000 Coins
-6000 Glory → 100 Mythical Tokens
-8000 Glory → 20 Guild Tokens
+⚔️ DEMON SLAYER BOT ⚔️`
+      }
+    );
 
-${rewards}`,
+  });
 
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: "🏰 Guild System",
-                callback_data: "guildsystem"
-              }
-            ]
-          ]
-        }
+  // =========================
+  // MY GLORY
+  // =========================
+  bot.onText(/\/myglory/, (msg) => {
+
+    const chatId = msg.chat.id;
+    const userId = msg.from.id.toString();
+
+    let guild = null;
+
+    for (const name in guilds) {
+
+      if (
+        guilds[name] &&
+        guilds[name].members &&
+        guilds[name].members.includes(userId)
+      ) {
+
+        guild = guilds[name];
+        break;
+
+      }
+
+    }
+
+    if (!guild) {
+      return bot.sendMessage(
+        chatId,
+        "❌ You are not in a guild."
+      );
+    }
+
+    if (!guild.memberGlory) {
+      guild.memberGlory = {};
+    }
+
+    const userGlory =
+      guild.memberGlory[userId] || 0;
+
+    bot.sendPhoto(
+      chatId,
+      "https://pic-link-bot.lovable.app/i/telegram-1779356514904-618f311d.jpg",
+      {
+        caption:
+`🏆 YOUR GUILD GLORY
+
+🏰 Guild:
+${guild.name}
+
+👤 Player:
+${msg.from.first_name}
+
+⚔️ Your Glory:
+${userGlory}
+
+🔥 Guild Total Glory:
+${guild.glory}
+
+📅 Rewards are distributed weekly.
+
+🎁 More contribution
+= Better rewards.
+
+⚔️ DEMON SLAYER BOT ⚔️`
       }
     );
 
