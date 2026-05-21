@@ -365,7 +365,7 @@ const characters = [
   speed: 380,
   rarity: "SSR",
   image: "https://pic-link-bot.lovable.app/i/telegram-1779345976501-074dd29d.jpg"
-}
+},
 
  // 🟢 Mizunoto Rank (Beginner)
 {
