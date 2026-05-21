@@ -1,6 +1,8 @@
 version: "1.0"
 
-runtime: node:20
+runtime:
+  name: node
+  version: "20"
 
 build:
   - npm install
