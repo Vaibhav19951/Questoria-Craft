@@ -79,7 +79,7 @@ const demons = [
     abilities: ["Horn Charge"],
     rarity: "Common",
     image: "https://i.pinimg.com/736x/df/a7/bd/dfa7bd3e1a38ee5ae7615e7e4ff98d8e.jpg"
-  }
+  },
   {
     id: "demon_10",
     name: "Hand Demon",
