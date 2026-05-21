@@ -20,11 +20,11 @@ const getUser = (userId) => {
   if (!players[userId]) {
     players[userId] = {
       coins: 1000,
-      tokens: 0, // This functions as Bank balance
+      tokens: 0, // Bank balance
       level: 1,
       xp: 0,
       guildId: null,
-      lastDaily: 0 // Added to track daily cooldown
+      lastDaily: 0 
     };
     savePlayers();
   }
@@ -99,7 +99,7 @@ module.exports = (bot) => {
     ];
 
     const randomJob = jobs[Math.floor(Math.random() * jobs.length)];
-    const earnings = Math.floor(Math.random() * 150) + 50; // Earns 50-200 coins
+    const earnings = Math.floor(Math.random() * 150) + 50; 
 
     p.coins += earnings;
     savePlayers();
@@ -110,38 +110,40 @@ module.exports = (bot) => {
   // =========================
   // 4. PLAYER DEPOSIT (BANK)
   // =========================
-  // This layout allows typing just "/deposit" to see an instruction message
   bot.onText(/\/deposit(?: (.+))?/, (msg, match) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id.toString();
     const p = getUser(userId);
 
-    const amountInput = match[1];
+    let amountInput = match[1];
 
     if (!amountInput) {
-      return bot.sendMessage(chatId, "ℹ️ Please specify an amount to deposit. Example: `/deposit 50` or `/deposit all`", { parse_mode: "Markdown" });
+      return bot.sendMessage(chatId, "ℹ️ Please specify an amount to deposit. Example: `/deposit 100` or `/deposit all`", { parse_mode: "Markdown" });
     }
 
+    // Cleans up the text if they include the word "coins"
+    amountInput = amountInput.toLowerCase().replace(/coins|coin/g, "").trim();
+
     let amount = 0;
-    if (amountInput.toLowerCase() === "all") {
+    if (amountInput === "all") {
       amount = p.coins;
     } else {
       amount = Number(amountInput);
     }
 
     if (isNaN(amount) || amount <= 0) {
-      return bot.sendMessage(chatId, "❌ Invalid amount");
+      return bot.sendMessage(chatId, "❌ Invalid amount! Please provide a valid number. Example: `/deposit 100`");
     }
 
     if (p.coins < amount) {
-      return bot.sendMessage(chatId, "❌ Not enough coins");
+      return bot.sendMessage(chatId, "❌ Not enough coins in your wallet!");
     }
 
     p.coins -= amount;
     p.tokens += amount;
     savePlayers();
 
-    bot.sendMessage(chatId, `🏦 Deposited ${amount} coins to your bank account.`);
+    bot.sendMessage(chatId, `🏦 Success! Deposited *${amount} coins* to your bank account.`, { parse_mode: "Markdown" });
   });
 
   // =========================
@@ -152,7 +154,7 @@ module.exports = (bot) => {
     const userId = msg.from.id.toString();
     const p = getUser(userId);
 
-    const amountInput = match[1];
+    let amountInput = match[1];
 
     if (!amountInput) {
       return bot.sendMessage(chatId, "ℹ️ Please specify an amount to deposit to your guild. Example: `/guilddeposit 100`", { parse_mode: "Markdown" });
@@ -163,6 +165,9 @@ module.exports = (bot) => {
     }
 
     const g = getGuild(p.guildId);
+    
+    // Cleans up the text if they include the word "coins" here too
+    amountInput = amountInput.toLowerCase().replace(/coins|coin/g, "").trim();
     let amount = Number(amountInput);
 
     if (isNaN(amount) || amount <= 0) {
