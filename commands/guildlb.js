@@ -1,59 +1,47 @@
-bot.onText(/\/guildlb/, (msg) => {
+const guilds = require("../data/guild");
 
-  const chatId = msg.chat.id;
+module.exports = (bot) => {
 
-  let list = [];
+  bot.onText(/\/guildlb/, (msg) => {
 
-  for (let g in guilds) {
+    const chatId = msg.chat.id;
 
-    const guild = guilds[g];
-    if (!guild) continue;
+    const guildArray = Object.values(guilds)
+      .filter(g => g && g.name)
+      .sort(
+        (a, b) =>
+          (b.vault?.coins || 0) -
+          (a.vault?.coins || 0)
+      );
 
-    const coins = guild.vault?.coins || 0;
-    const tokens = guild.vault?.mythicalTokens || 0;
+    if (guildArray.length === 0) {
+      return bot.sendMessage(
+        chatId,
+        "❌ No guilds found."
+      );
+    }
 
-    const score = coins + (tokens * 10);
+    let text = "🏆 GUILD LEADERBOARD 🏆\n\n";
 
-    list.push({
-      name: guild.name,
-      members: guild.members.length,
-      score: score
+    guildArray.slice(0, 10).forEach((guild, index) => {
+
+      text +=
+`${index + 1}. ${guild.name}
+👥 ${guild.members.length}/${guild.maxMembers}
+🏦 ${guild.vault.coins} Coins
+
+`;
+
     });
-  }
 
-  list.sort((a, b) => b.score - a.score);
+    bot.sendAnimation(
+      chatId,
+      "https://i.pinimg.com/originals/b1/76/95/b176956f18223739da05d785927e02ca.gif",
+      {
+        caption: text
+      }
+    );
 
-  let text = `
-🏆 *GUILD LEADERBOARD*
-
-📘 HOW TO JOIN GUILD:
-/joinguild <guild name>
-
-🏰 HOW TO CREATE GUILD:
-/createguild <name>
-
-📜 MY GUILD:
-/myguild
-
-💰 DEPOSIT:
-/deposit coins 100
-/deposit tokens 5
-
-━━━━━━━━━━━━━━
-TOP GUILDS 👇
-  `;
-
-  if (list.length === 0) {
-    return bot.sendMessage(chatId, "❌ No guilds yet");
-  }
-
-  list.slice(0, 10).forEach((g, i) => {
-    text += `\n${i + 1}. ${g.name}
-👥 Members: ${g.members}
-💰 Score: ${g.score}\n`;
   });
 
-  bot.sendMessage(chatId, text, {
-    parse_mode: "Markdown"
-  });
-});
+};
