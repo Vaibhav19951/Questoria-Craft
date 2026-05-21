@@ -107,14 +107,17 @@ module.exports = (bot) => {
 
   // =========================
   // ADD CHARACTER TO PLAYER
+  // FORMAT:
+  // /addcharacter USERID NAME TYPE
   // =========================
   bot.onText(/\/addcharacter (\d+) (.+) (normal|mythical)/i, (msg, match) => {
     if (!isOwner(msg)) return;
 
     const userId = match[1];
-    const character = match[2].trim();
+    const name = match[2].trim();
     const type = match[3].toLowerCase();
 
+    // init player
     if (!players[userId]) {
       players[userId] = {
         coins: 0,
@@ -127,37 +130,46 @@ module.exports = (bot) => {
       players[userId].inventory = [];
     }
 
-    players[userId].inventory.push(`${character}|${type}`);
+    // create unique character ID
+    const charId = "c" + Date.now();
+
+    // store format: ID|NAME|TYPE
+    players[userId].inventory.push(`${charId}|${name}|${type}`);
 
     players.save();
 
     bot.sendMessage(
       msg.chat.id,
-      `✅ Added ${character} (${type}) to ${userId}`
+      `✅ Added ${name} (${type}) to ${userId}\n🆔 ID: ${charId}`
     );
   });
 
   // =========================
-  // REMOVE CHARACTER FROM PLAYER
+  // REMOVE CHARACTER
+  // FORMAT:
+  // /removecharacter USERID CHARACTER_ID
   // =========================
   bot.onText(/\/removecharacter (\d+) (.+)/i, (msg, match) => {
     if (!isOwner(msg)) return;
 
     const userId = match[1];
-    const character = match[2].trim();
+    const charId = match[2].trim();
 
     if (!players[userId] || !players[userId].inventory) {
       return bot.sendMessage(msg.chat.id, "❌ Player not found");
     }
 
     players[userId].inventory =
-      players[userId].inventory.filter(c => !c.startsWith(character + "|"));
+      players[userId].inventory.filter(c => {
+        const [id] = c.split("|");
+        return id !== charId;
+      });
 
     players.save();
 
     bot.sendMessage(
       msg.chat.id,
-      `🗑️ Removed ${character} from ${userId}`
+      `🗑️ Removed character ID: ${charId}`
     );
   });
   // =========================
