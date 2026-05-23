@@ -1,55 +1,49 @@
-console.log("✅ GUILD LEADERBOARD FILE LOADED");
+console.log("✅ BULLETPROOF GUILD LB LOADED (VELIX OS V2.3)");
 
 const fs = require("fs");
 const path = require("path");
-
 const guildFile = path.join(__dirname, "../data/guild.json");
 
 module.exports = (bot) => {
-
-  // =========================
-  // GUILD LEADERBOARD COMMAND
-  // =========================
   bot.onText(/\/guildlb/, (msg) => {
     const chatId = msg.chat.id;
 
-    // Load the guild database live every time the command is used
+    // 1. Safe Load
     let guilds = {};
-    try { 
-      guilds = JSON.parse(fs.readFileSync(guildFile, "utf8")); 
-    } catch (err) { 
-      guilds = {}; 
+    try {
+      if (fs.existsSync(guildFile)) {
+        const raw = fs.readFileSync(guildFile, "utf8");
+        guilds = JSON.parse(raw);
+      }
+    } catch (e) {
+      console.error("GuildDB Read Error:", e);
+      return bot.sendMessage(chatId, "❌ Database error: Guild data unreadable.");
     }
 
-    // Convert guilds object to an array and sort them by vault coins
-    const guildArray = Object.values(guilds)
-      .filter(g => g && g.name)
-      .sort((a, b) => (b.vault?.coins || 0) - (a.vault?.coins || 0));
+    // 2. Safe Filter & Sort
+    const guildArray = Object.keys(guilds)
+      .map(id => ({ id, ...guilds[id] }))
+      .filter(g => g.name); // Sirf wahi guilds uthao jinme name hai
 
     if (guildArray.length === 0) {
-      return bot.sendMessage(chatId, "❌ No guilds have been created yet on this server.");
+      return bot.sendMessage(chatId, "❌ No active guilds found.");
     }
 
-    let text = "🏆 **GUILD LEADERBOARD (VAULT COINS)** 🏆\n\n";
+    guildArray.sort((a, b) => (b.glory || 0) - (a.glory || 0));
+    const top = guildArray.slice(0, 10);
 
-    // Grab the top 10 guilds
-    guildArray.slice(0, 10).forEach((guild, index) => {
-      let medal = `${index + 1}.`;
-      if (index === 0) medal = "🥇";
-      if (index === 1) medal = "🥈";
-      if (index === 2) medal = "🥉";
-
-      text += `${medal} **${guild.name}**\n👥 Members: ${guild.members.length}/${guild.maxMembers}\n🏦 Vault balance: ${guild.vault?.coins || 0} coins\n\n`;
+    // 3. Building Message
+    let text = "🏆 **GUILD GLORY LEADERBOARD** 🏆\n────────────────────\n";
+    
+    top.forEach((g, i) => {
+      const rank = ["🥇", "🥈", "🥉"][i] || `${i + 1}.`;
+      const members = (g.members && Array.isArray(g.members)) ? g.members.length : 0;
+      text += `${rank} **${g.name}**\n   └ 🏆 Glory: \`${(g.glory || 0).toLocaleString()}\` | 👥 Members: \`${members}\`\n\n`;
     });
 
-    bot.sendAnimation(
-      chatId,
-      "https://i.pinimg.com/originals/b1/76/95/b176956f18223739da05d785927e02ca.gif",
-      {
-        caption: text,
-        parse_mode: "Markdown"
-      }
-    );
+    // 4. Final Send
+    bot.sendMessage(chatId, text, { parse_mode: "Markdown" }).catch(err => {
+      console.error("LB Send Error:", err);
+    });
   });
-
 };

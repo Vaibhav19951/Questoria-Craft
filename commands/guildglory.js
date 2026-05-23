@@ -1,4 +1,4 @@
-console.log("✅ GUILD GLORY FILE LOADED");
+console.log("⚔️ GUILD GLORY SYSTEM v2.3 FINAL LOADED");
 
 const fs = require("fs");
 const path = require("path");
@@ -6,139 +6,117 @@ const path = require("path");
 const playerFile = path.join(__dirname, "../data/players.json");
 const guildFile = path.join(__dirname, "../data/guild.json");
 
-// LOAD DATA SAFELY
-let players = {};
-let guilds = {};
+// DATA LOADERS
+const loadDB = (file) => {
+  try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return {}; }
+};
 
-try { players = JSON.parse(fs.readFileSync(playerFile, "utf8")); } catch { players = {}; }
-try { guilds = JSON.parse(fs.readFileSync(guildFile, "utf8")); } catch { guilds = {}; }
-
-// SAVE DATA SAFELY
-const savePlayers = () => fs.writeFileSync(playerFile, JSON.stringify(players, null, 2));
-const saveGuilds = () => fs.writeFileSync(guildFile, JSON.stringify(guilds, null, 2));
+const saveDB = (file, data) => {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf8");
+};
 
 module.exports = (bot) => {
 
-  // =========================
-  // GUILD REWARDS PANEL
-  // =========================
+  // 1. REWARDS PANEL
   bot.onText(/\/guildrewards/, (msg) => {
     const chatId = msg.chat.id;
-
-    bot.sendPhoto(
-      chatId,
-      "https://pic-link-bot.lovable.app/i/telegram-1779356514904-618f311d.jpg",
-      {
-        caption: 
-`🏆 GUILD GLORY SYSTEM
-
-⚔️ HOW IT WORKS
-• Glory is earned automatically through battles & activities.
-• Every member has their own personal contribution.
-• Weekly rewards are distributed based on YOUR contribution only.
-
-📅 WEEKLY RESET:
-Every Monday
-━━━━━━━━━━━━━━━
-🎁 REWARDS
-
-🏆 2000 Glory -> 💰 50000 Coins
-🏆 4000 Glory -> 💰 100000 Coins
-🏆 6000 Glory -> 🧬 100 Mythical Crystals
-🏆 8000 Glory -> 🏅 20 Guild Tokens
-━━━━━━━━━━━━━━━
-🔥 USE /claimguildrewards TO CLAIM YOUR MILESTONES!
-
-⚔️ DEMON SLAYER BOT ⚔️`
-      }
-    );
+    bot.sendPhoto(chatId, "https://pic-link-bot.lovable.app/i/telegram-1779356514904-618f311d.jpg", {
+      caption: `🏆 **GUILD GLORY SYSTEM**\n\n🎁 **MILESTONE REWARDS**\n🏆 2000 Glory -> 💰 50,000 Coins\n🏆 4000 Glory -> 💰 100,000 Coins\n🏆 6000 Glory -> 🎴 100 Slayer Tokens\n🏆 8000 Glory -> 🏅 20 Guild Tokens\n\n🔥 Use /claimguildrewards to claim!`,
+      parse_mode: "Markdown"
+    });
   });
 
-  // =========================
-  // CLAIM GUILD REWARDS COMMAND (NEW)
-  // =========================
+  // 2. CLAIM REWARDS (FIXED LOGIC)
   bot.onText(/\/claimguildrewards/, (msg) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id.toString();
 
-    // Ensure player profile exists
-    if (!players[userId]) {
-      return bot.sendMessage(chatId, "❌ You don't have a profile yet! Type /balance to make one.");
-    }
+    let players = loadDB(playerFile);
+    let guilds = loadDB(guildFile);
+
+    if (!players[userId]) return bot.sendMessage(chatId, "❌ Register with /profile first!");
 
     const player = players[userId];
-
-    // Find their guild
     let userGuild = null;
-    for (const id in guilds) {
-      if (guilds[id] && Array.isArray(guilds[id].members) && guilds[id].members.includes(userId)) {
-        userGuild = guilds[id];
-        break;
+    let userGuildKey = null;
+
+    // Check if player has guildId in profile OR loop through guilds to find them
+    if (player.guildId && guilds[player.guildId]) {
+      userGuild = guilds[player.guildId];
+      userGuildKey = player.guildId;
+    } else {
+      for (const id in guilds) {
+        if (guilds[id].members && guilds[id].members.includes(userId)) {
+          userGuild = guilds[id];
+          userGuildKey = id;
+          player.guildId = id; // Syncing the profile automatically
+          break;
+        }
       }
     }
 
-    if (!userGuild) {
-      return bot.sendMessage(chatId, "❌ You must be in a guild to claim glory rewards!");
-    }
+    if (!userGuild) return bot.sendMessage(chatId, "❌ You must be in a guild to claim glory rewards!");
 
     const currentGlory = userGuild.glory || 0;
-    
-    // Ensure reward tracking exists for this specific guild setup
-    if (!userGuild.rewardClaimed) {
-      userGuild.rewardClaimed = { 2000: false, 4000: false, 6000: false, 8000: false };
-    }
+    if (!player.claimedGuildMilestones) player.claimedGuildMilestones = { 2000: false, 4000: false, 6000: false, 8000: false };
 
     let claimedText = "";
-    let updatedSomething = false;
+    let updated = false;
 
-    // Check Milestone 1: 2000 Glory
-    if (currentGlory >= 2000 && !userGuild.rewardClaimed[2000]) {
-      player.coins += 50000;
-      userGuild.rewardClaimed[2000] = true;
-      claimedText += "🎁 Unlocked Tier 1: Received **50,000 Coins**!\n";
-      updatedSomething = true;
+    if (currentGlory >= 2000 && !player.claimedGuildMilestones[2000]) {
+      player.coins = (player.coins || 0) + 50000;
+      player.claimedGuildMilestones[2000] = true;
+      claimedText += "✅ 2000 Glory: 50,000 Coins\n";
+      updated = true;
     }
-
-    // Check Milestone 2: 4000 Glory
-    if (currentGlory >= 4000 && !userGuild.rewardClaimed[4000]) {
-      player.coins += 100000;
-      userGuild.rewardClaimed[4000] = true;
-      claimedText += "🎁 Unlocked Tier 2: Received **100,000 Coins**!\n";
-      updatedSomething = true;
+    if (currentGlory >= 4000 && !player.claimedGuildMilestones[4000]) {
+      player.coins = (player.coins || 0) + 100000;
+      player.claimedGuildMilestones[4000] = true;
+      claimedText += "✅ 4000 Glory: 100,000 Coins\n";
+      updated = true;
     }
-
-    // Check Milestone 3: 6000 Glory
-    if (currentGlory >= 6000 && !userGuild.rewardClaimed[6000]) {
-      player.mythicalCrystals = (player.mythicalCrystals || 0) + 100;
-      userGuild.rewardClaimed[6000] = true;
-      claimedText += "🎁 Unlocked Tier 3: Received **100 Mythical Crystals**!\n";
-      updatedSomething = true;
+    if (currentGlory >= 6000 && !player.claimedGuildMilestones[6000]) {
+      player.tokens = (player.tokens || 0) + 100;
+      player.claimedGuildMilestones[6000] = true;
+      claimedText += "✅ 6000 Glory: 100 Slayer Tokens\n";
+      updated = true;
     }
-
-    // Check Milestone 4: 8000 Glory
-    if (currentGlory >= 8000 && !userGuild.rewardClaimed[8000]) {
+    if (currentGlory >= 8000 && !player.claimedGuildMilestones[8000]) {
       userGuild.guildTokens = (userGuild.guildTokens || 0) + 20;
-      userGuild.rewardClaimed[8000] = true;
-      claimedText += "🎁 Unlocked Tier 4: Your Guild received **20 Guild Tokens**!\n";
-      updatedSomething = true;
+      player.claimedGuildMilestones[8000] = true;
+      claimedText += "✅ 8000 Glory: 20 Guild Tokens (Vault)\n";
+      updated = true;
     }
 
-    if (!updatedSomething) {
-      return bot.sendMessage(
-        chatId, 
-        `ℹ️ No new rewards available to claim.\n🏰 **Current Guild Glory:** ${currentGlory}\n\nKeep playing to reach the next milestone tier!`
-      );
+    if (!updated) {
+      return bot.sendMessage(chatId, `ℹ️ No new rewards. Current Glory: \`${currentGlory}\``);
     }
 
-    // Save changes to files
-    savePlayers();
-    saveGuilds();
-
-    bot.sendMessage(
-      chatId,
-      `🎉 **Rewards Claimed Successfully!**\n\n${claimedText}\nYour updated status has been saved!`,
-      { parse_mode: "Markdown" }
-    );
+    saveDB(playerFile, players);
+    saveDB(guildFile, guilds);
+    bot.sendMessage(chatId, `🎉 **Rewards Claimed!**\n\n${claimedText}`);
   });
 
+  // 3. ADMIN: ADD GLORY (GLOBAL SYNC)
+  bot.onText(/\/addglory (.+) (\d+)/, (msg, match) => {
+    const guildName = match[1].trim();
+    const amount = parseInt(match[2]);
+    let guilds = loadDB(guildFile);
+    
+    let found = false;
+    for (const id in guilds) {
+        if (guilds[id].name.toLowerCase() === guildName.toLowerCase()) {
+            guilds[id].glory = (guilds[id].glory || 0) + amount;
+            found = true;
+            break;
+        }
+    }
+    
+    if (found) {
+        saveDB(guildFile, guilds);
+        bot.sendMessage(msg.chat.id, `✅ Added ${amount} glory to ${guildName}!`);
+    } else {
+        bot.sendMessage(msg.chat.id, "❌ Guild not found.");
+    }
+  });
 };

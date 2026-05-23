@@ -35,6 +35,30 @@ process.on("uncaughtException", err => {
 process.on("unhandledRejection", err => {
   console.log("❌ PROMISE ERROR:", err.message);
 });
+ 
+bot.onText(/\/checkdb/, (msg) => {
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Yahi wo jagah hai jahan se bot data uthata hai
+    const targetFile = path.join(process.cwd(), "data", "players.json");
+    
+    if (!fs.existsSync(targetFile)) {
+        return bot.sendMessage(msg.chat.id, "❌ File mili hi nahi: " + targetFile);
+    }
+    
+    const data = fs.readFileSync(targetFile, "utf8");
+    const json = JSON.parse(data);
+    
+    // Check karo ki tumhari ID ka data wahan hai ya nahi
+    const myData = json["2086993762"];
+    
+    if (myData) {
+        bot.sendMessage(msg.chat.id, `✅ File Path: ${targetFile}\n\n💰 Coins in File: ${myData.coins}\n📈 Level: ${myData.level}`);
+    } else {
+        bot.sendMessage(msg.chat.id, "❌ Is file mein tumhari ID (2086993762) ka data nahi hai!");
+    }
+});
 
 // =========================
 // SINGLE CLEAN COMMAND LOADER

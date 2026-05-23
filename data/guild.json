@@ -1,1 +1,23 @@
-{}
+{
+  "tornado": {
+    "name": "tornado",
+    "leader": "2086993762",
+    "leaderName": "𝘴нꪗ",
+    "members": [
+      "2086993762"
+    ],
+    "maxMembers": 15,
+    "vault": {
+      "coins": 500,
+      "mythicalTokens": 0
+    },
+    "glory": 9991919911,
+    "guildTokens": 20,
+    "rewardClaimed": {
+      "2000": false,
+      "4000": false,
+      "6000": false,
+      "8000": false
+    }
+  }
+}

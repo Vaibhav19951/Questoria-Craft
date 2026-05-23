@@ -1,11 +1,16 @@
 {
   "2086993762": {
-    "coins": 9191919191,
-    "mythicalCrystals": 0,
-    "inventory": [],
+    "coins": 0,
+    "mythicalCrystals": 92905,
+    "inventory": [
+      "c1779559830998|Tanjiro Kamado [Sun Breathing Limited]|https://i.pinimg.com/736x/71/0d/48/710d48e1f4e127760980576724bb10fa.jpg|mythical",
+      "c1779559852846|Nezuko Kamado [Demon Queen Limited]|https://i.pinimg.com/736x/86/c5/80/86c5801b3eb25ca6e4ac2bfc2e6fd23d.jpg|mythical",
+      "c1779559949506|Tengen Uzui [Sound Master Limited]|https://i.pinimg.com/736x/be/4e/bf/be4ebf17b3c92d0a262c50fd60748ec6.jpg|mythical"
+    ],
     "level": 1,
     "xp": 0,
     "character": "Tanjiro",
-    "username": "shyyy_o"
+    "username": "shyyy_o",
+    "guildId": "tornado"
   }
 }

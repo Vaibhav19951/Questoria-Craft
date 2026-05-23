@@ -1,4 +1,4 @@
-console.log("✅ BATTLE SYSTEM LOADED WITH REWARDS");
+console.log("⚔️ BATTLE SYSTEM ONLINE (VELIX OS V2.5) - FIXED TOTAL");
 
 const fs = require("fs");
 const path = require("path");
@@ -6,228 +6,131 @@ const demons = require("../asset/demons");
 
 const playerFile = path.join(__dirname, "../data/players.json");
 
-// LOAD DATA SAFELY
-let players = {};
-try { players = JSON.parse(fs.readFileSync(playerFile, "utf8")); } catch { players = {}; }
-
-// SAVE DATA SAFELY
-const savePlayers = () => fs.writeFileSync(playerFile, JSON.stringify(players, null, 2));
-
-// SAFE PLAYER INIT
-const getPlayer = (userId) => {
-  if (!players[userId]) {
-    players[userId] = {
-      coins: 1000,
-      tokens: 0,
-      level: 1,
-      xp: 0,
-      guildId: null,
-      lastDaily: 0
-    };
-    savePlayers();
-  }
-  return players[userId];
-};
-
-// Save active battles
 const battles = {};
 
 module.exports = (bot) => {
-
-  // =========================
-  // ⚔️ /battle
-  // =========================
   bot.onText(/\/battle/, async (msg) => {
     const chatId = msg.chat.id;
-    const userId = msg.from.id.toString(); // Using string for JSON matching
+    const userId = msg.from.id.toString();
 
-    // Prevent multiple battles
-    if (battles[userId]) {
-      return bot.sendMessage(chatId, "⚠️ You are already in a battle!");
-    }
+    if (battles[userId]) return bot.sendMessage(chatId, "⚠️ You are already in a battle!");
 
-    // Ensure they have a profile created before fighting
-    getPlayer(userId);
-
-    // Random demon
     const demon = demons[Math.floor(Math.random() * demons.length)];
+    battles[userId] = { demon, playerHp: 150, demonHp: demon.hp, shield: false };
 
-    // Player Data
-    battles[userId] = {
-      demon,
-      playerHp: 150,
-      demonHp: demon.hp,
-      shield: false,
-    };
-
-    // Send demon
     await bot.sendPhoto(chatId, demon.image, {
-      caption: `👹 **A Demon Appeared!**\n\n🏷 **Name:** ${demon.name}\n⚡ **Rank:** ${demon.rank}\n🔥 **Type:** ${demon.type}\n\n❤️ **HP:** ${demon.hp}\n🗡 **ATK:** ${demon.attack}\n🛡 **DEF:** ${demon.defense}\n\nWhat will you do?`,
+      caption: `👹 **A Demon Appeared!**\n\n🏷 **Name:** ${demon.name}\n❤️ **HP:** ${demon.hp}\n🗡 **ATK:** ${demon.attack}\n\nWhat will you do?`,
       parse_mode: "Markdown",
       reply_markup: {
-        inline_keyboard: [
-          [
-            { text: "⚔️ Slay", callback_data: "slay" },
-            { text: "🏃 Run", callback_data: "run" }
-          ]
-        ]
+        inline_keyboard: [[{ text: "⚔️ Slay", callback_data: "slay" }, { text: "🏃 Run", callback_data: "run" }]]
       }
     });
   });
 
-  // =========================
-  // 🔘 BUTTONS
-  // =========================
   bot.on("callback_query", async (query) => {
-    const data = query.data;
-    const msg = query.message;
-    const chatId = msg.chat.id;
-    const userId = query.from.id.toString(); // Using string matching
+    const validBattleButtons = ["slay", "run", "attack", "shield"];
+    if (!validBattleButtons.includes(query.data)) return;
 
-    // No active battle
-    if (!battles[userId]) {
-      return bot.answerCallbackQuery(query.id, { text: "No active battle!" });
-    }
+    const userId = query.from.id.toString();
+    if (!battles[userId]) return bot.answerCallbackQuery(query.id, { text: "❌ No active battle!", show_alert: true });
 
     const battle = battles[userId];
     const demon = battle.demon;
+    const chatId = query.message.chat.id;
+    const messageId = query.message.message_id;
 
-    // =========================
-    // 🏃 RUN
-    // =========================
-    if (data === "run") {
+    if (query.data === "run") {
       delete battles[userId];
-      await bot.editMessageCaption(`🏃 You escaped safely from ${demon.name}!`, {
-        chat_id: chatId,
-        message_id: msg.message_id,
+      await bot.editMessageCaption(`🏃 You escaped safely from ${demon.name}!`, { chat_id: chatId, message_id: messageId });
+    } 
+    else if (query.data === "slay") {
+      await bot.editMessageCaption(`⚔️ **Battle Started Against ${demon.name}!**\n\n❤️ Your HP: ${battle.playerHp}\n👹 Demon HP: ${battle.demonHp}`, {
+        chat_id: chatId, message_id: messageId, parse_mode: "Markdown",
+        reply_markup: { inline_keyboard: [[{ text: "🗡 Attack", callback_data: "attack" }, { text: "🛡 Shield", callback_data: "shield" }], [{ text: "🏃 Run", callback_data: "run" }]] }
       });
-      return bot.answerCallbackQuery(query.id);
     }
-
-    // =========================
-    // ⚔️ START FIGHT
-    // =========================
-    if (data === "slay") {
-      await bot.editMessageCaption(
-        `⚔️ **Battle Started Against ${demon.name}!**\n\n❤️ Your HP: ${battle.playerHp}\n👹 Demon HP: ${battle.demonHp}`,
-        {
-          chat_id: chatId,
-          message_id: msg.message_id,
-          parse_mode: "Markdown",
-          reply_markup: {
-            inline_keyboard: [
-              [
-                { text: "🗡 Attack", callback_data: "attack" },
-                { text: "🛡 Shield", callback_data: "shield" }
-              ],
-              [
-                { text: "🏃 Run", callback_data: "run" }
-              ]
-            ]
-          }
-        }
-      );
-      return bot.answerCallbackQuery(query.id);
-    }
-
-    // =========================
-    // 🛡 SHIELD
-    // =========================
-    if (data === "shield") {
+    else if (query.data === "shield") {
       battle.shield = true;
-      return bot.answerCallbackQuery(query.id, { text: "🛡 Shield Activated! Damage will be halved next turn." });
+      bot.answerCallbackQuery(query.id, { text: "🛡 Shield Activated!" });
+      return;
     }
-
-    // =========================
-    // 🗡 ATTACK
-    // =========================
-    if (data === "attack") {
-      // Player attack
+    else if (query.data === "attack") {
       const playerDamage = Math.floor(Math.random() * 20) + 15;
       battle.demonHp -= playerDamage;
 
-      let text = `🗡 You attacked ${demon.name}\n💥 **${playerDamage} damage!**\n\n👹 Demon HP: ${Math.max(0, battle.demonHp)}\n❤️ Your HP: ${battle.playerHp}\n\n`;
-
-      // DEMON DEFEATED (REWARDS MATRIX ADDED HERE)
+      // WIN CONDITION
       if (battle.demonHp <= 0) {
-        delete battles[userId];
+        let freshPlayers = {};
+        try {
+          if (fs.existsSync(playerFile)) {
+            freshPlayers = JSON.parse(fs.readFileSync(playerFile, "utf8"));
+          }
+        } catch (err) {
+          console.error("🔥 Error reading fresh file:", err);
+        }
 
-        // Fetch user data & add math rewards
-        const player = getPlayer(userId);
-        const rewardCoins = Math.abs(Number(demon.reward)) || 50;
-        const rewardXp = Math.abs(Number(demon.exp)) || 20;
-        console.log(demon.reward, demon.exp);
+        if (!freshPlayers[userId]) {
+          freshPlayers[userId] = { coins: 0, xp: 0, level: 1, bank: 0, tokens: 0, guildId: null, inventory: [] };
+        }
+
+        const rCoins = parseInt(demon.reward) || 50;
+        const rXp = parseInt(demon.exp) || 20;
+
+        // Numbers data cleansing
+        const currentCoins = Number(freshPlayers[userId].coins || 0);
+        const currentXp = Number(freshPlayers[userId].xp || 0);
+        let currentLevel = Number(freshPlayers[userId].level || 1);
+
+        // Update balance safely
+        freshPlayers[userId].coins = currentCoins + Number(rCoins);
         
-        player.coins += rewardCoins;
-        player.xp += rewardXp;
+        // Accurate level-up algorithm
+        let totalXp = currentXp + Number(rXp);
+        let xpNeeded = currentLevel * 100;
+        let levelUpMessage = "";
 
-        text += `🏆 **YOU WON!**\n\n💰 **+${rewardCoins} Coins**\n✨ **+${rewardXp} EXP**`;
-
-        // Automated Level Up Logic (Every 100 XP = 1 Level)
-        const xpNeeded = player.level * 100;
-        if (player.xp >= xpNeeded) {
-          player.level += 1;
-          player.xp -= xpNeeded; // Keep remainder XP
-          text += `\n\n🎉 **LEVEL UP!** You are now **Level ${player.level}**!`;
+        while (totalXp >= xpNeeded) {
+          totalXp -= xpNeeded;
+          currentLevel += 1;
+          xpNeeded = currentLevel * 100;
+          levelUpMessage = `\n\n🎉 **LEVEL UP!** Now Level ${currentLevel}!`;
         }
 
-        // Write changes to players.json database
-        savePlayers();
+        freshPlayers[userId].level = currentLevel;
+        freshPlayers[userId].xp = totalXp < 0 ? 0 : totalXp; 
 
-        await bot.editMessageCaption(text, {
-          chat_id: chatId,
-          message_id: msg.message_id,
-          parse_mode: "Markdown"
-        });
+        try {
+          fs.writeFileSync(playerFile, JSON.stringify(freshPlayers, null, 2), "utf8");
+          console.log(`✅ Data hard-saved for ${userId}. Coins: ${freshPlayers[userId].coins}, XP: ${freshPlayers[userId].xp}, LVL: ${freshPlayers[userId].level}`);
+        } catch (err) {
+          console.error("🔥 Error hard-saving file:", err);
+        }
 
-        return bot.answerCallbackQuery(query.id);
-      }
-
-      // Demon attack
-      let demonDamage = Math.floor(Math.random() * (demon.attack || 15)) + 5;
-
-      // Shield reduces damage
-      if (battle.shield) {
-        demonDamage = Math.floor(demonDamage / 2);
-        battle.shield = false;
-        text += `🛡 **Shield reduced incoming damage!**\n\n`;
-      }
-
-      battle.playerHp -= demonDamage;
-      text += `👹 ${demon.name} countered and attacked!\n💥 **${demonDamage} damage!**\n\n❤️ Your HP: ${Math.max(0, battle.playerHp)}`;
-
-      // PLAYER DEFEATED
-      if (battle.playerHp <= 0) {
         delete battles[userId];
-        text += `\n\n☠️ **You were defeated by the demon... Train harder!**`;
 
-        await bot.editMessageCaption(text, {
-          chat_id: chatId,
-          message_id: msg.message_id,
-          parse_mode: "Markdown"
+        await bot.editMessageCaption(`🏆 **YOU WON!**\n💰 **+${rCoins} Coins**\n✨ **+${rXp} XP**${levelUpMessage}\n\n✅ Profile synced live with database.`, { 
+          chat_id: chatId, 
+          message_id: messageId, 
+          parse_mode: "Markdown" 
         });
-        return bot.answerCallbackQuery(query.id);
-      }
+      } 
+      else {
+        // Counter Attack Logic
+        let dDmg = Math.floor(Math.random() * (demon.attack || 15)) + 5;
+        if (battle.shield) { dDmg = Math.floor(dDmg / 2); battle.shield = false; }
+        battle.playerHp -= dDmg;
 
-      // Continue battle loop
-      await bot.editMessageCaption(text, {
-        chat_id: chatId,
-        message_id: msg.message_id,
-        parse_mode: "Markdown",
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { text: "🗡 Attack", callback_data: "attack" },
-              { text: "🛡 Shield", callback_data: "shield" }
-            ],
-            [
-              { text: "🏃 Run", callback_data: "run" }
-            ]
-          ]
+        if (battle.playerHp <= 0) {
+          delete battles[userId];
+          await bot.editMessageCaption(`☠️ **You were defeated by ${demon.name}!**`, { chat_id: chatId, message_id: messageId, parse_mode: "Markdown" });
+        } else {
+          await bot.editMessageCaption(`🗡 You dealt ${playerDamage} dmg!\n👹 Demon HP: ${battle.demonHp}\n❤️ Your HP: ${battle.playerHp}`, {
+            chat_id: chatId, message_id: messageId, parse_mode: "Markdown",
+            reply_markup: { inline_keyboard: [[{ text: "🗡 Attack", callback_data: "attack" }, { text: "🛡 Shield", callback_data: "shield" }], [{ text: "🏃 Run", callback_data: "run" }]] }
+          });
         }
-      });
-
-      return bot.answerCallbackQuery(query.id);
+      }
     }
+    bot.answerCallbackQuery(query.id);
   });
 };

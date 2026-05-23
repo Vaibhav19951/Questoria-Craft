@@ -4,7 +4,10 @@ const path = require("path");
 const playersPath = path.join(__dirname, "../data/players.json");
 const guildsPath = path.join(__dirname, "../data/guild.json");
 
-// SAFE INITIAL MODULE LOADING
+// Pull existing card databases seamlessly
+const { characters: normalCards } = require("../asset/assets.js");
+const { mythical: mythicCards } = require("../asset/mythical.js");
+
 let players = {};
 let guilds = {};
 
@@ -16,7 +19,7 @@ try {
   players = JSON.parse(fs.readFileSync(playersPath, "utf8"));
   guilds = JSON.parse(fs.readFileSync(guildsPath, "utf8"));
 } catch (e) {
-  console.log("⚠️ Error loading JSON configuration bases inside owner.js:", e.message);
+  console.log("⚠️ Error loading JSON bases inside owner.js:", e.message);
 }
 
 const saveAll = () => {
@@ -32,14 +35,23 @@ const getPlayer = (id) => {
     players[id] = { coins: 0, mythicalCrystals: 0, inventory: [], level: 1, xp: 0 };
     saveAll();
   }
-  // Ensure array metrics exist so index alterations don't break
   if (!players[id].inventory) players[id].inventory = [];
   return players[id];
 };
 
+// Username se UserID nikalne ka helper
+const resolveUserByTag = (mentionStr) => {
+  const cleanTag = mentionStr.replace("@", "").trim().toLowerCase();
+  for (const [id, profile] of Object.entries(players)) {
+    if (profile.username && profile.username.toLowerCase() === cleanTag) {
+      return id;
+    }
+  }
+  return null;
+};
+
 module.exports = (bot) => {
 
-  // Syncs admin/user names to profiles during lookups
   const registerUsername = (msg) => {
     if (msg.from && msg.from.username) {
       const p = getPlayer(msg.from.id.toString());
@@ -64,168 +76,212 @@ module.exports = (bot) => {
                  `💰 \`/removecoins ID AMOUNT\`\n` +
                  `💎 \`/addtokens ID AMOUNT\`\n` +
                  `💎 \`/removetokens ID AMOUNT\`\n\n` +
-                 `🧬 \`/addcharacter USERID Name|Image|Type\`\n` +
+                 `🧬 \`/addcharacter @user/ID card_id\`\n` +
                  `🗑️ \`/removecharacter USERID CharacterID\`\n\n` +
                  `👤 \`/checkplayer ID\`\n` +
                  `🔄 \`/resetplayer ID\`\n\n` +
-                 ` Castle Utilities:\n` +
                  `🏰 \`/deleteguild GUILD_ID_OR_NAME\``,
         parse_mode: "Markdown"
       }
     );
   });
 
-  // QUICK LOOKUP HELP ROUTE
   bot.onText(/\/myid/, (msg) => bot.sendMessage(msg.chat.id, `🆔 \`${msg.from.id}\``, { parse_mode: "Markdown" }));
 
   // ==========================================
-  // 🪙 CURRENCY MANIPULATION COMMANDS
+  // 🧬 DYNAMIC DB CHARACTER ADD PANEL
   // ==========================================
-  
-  // ADD COINS
+  bot.onText(/\/addcharacter (.+)/, (msg, match) => {
+    if (!isOwner(msg)) return;
+    registerUsername(msg);
+
+    const parts = match[1].trim().split(/\s+/);
+    if (parts.length < 2) {
+      return bot.sendMessage(msg.chat.id, "❌ **Format Error:** Use structural configuration: `/addcharacter @username tanjiro`", { parse_mode: "Markdown" });
+    }
+
+    const [userTarget, cardKeyInput] = parts;
+    const cardId = cardKeyInput.toLowerCase().replace(/\s+/g, "_");
+
+    // Resolve Target User ID
+    let targetUserId = resolveUserByTag(userTarget);
+    if (!targetUserId && !isNaN(userTarget.replace("@", ""))) {
+      targetUserId = userTarget.replace("@", "");
+    }
+
+    if (!targetUserId) {
+      return bot.sendMessage(msg.chat.id, `❌ **User Not Found:** \`${userTarget}\` ka data register nahi mila.`, { parse_mode: "Markdown" });
+    }
+
+    // Check if card exists in either DB
+    const hasNormal = normalCards[cardId] ? true : false;
+    const hasMythic = mythicCards[cardId] ? true : false;
+
+    if (!hasNormal && !hasMythic) {
+      return bot.sendMessage(msg.chat.id, `❌ **Database Error:** \`${cardId}\` naam ka koi character assets me nahi mila!`, { parse_mode: "Markdown" });
+    }
+
+    const buttons = [];
+    if (hasNormal) buttons.push({ text: "🟢 Drop Normal", callback_data: `own_drop_${targetUserId}_${cardId}_normal` });
+    if (hasMythic) buttons.push({ text: "👑 Drop Mythical", callback_data: `own_drop_${targetUserId}_${cardId}_mythic` });
+
+    bot.sendMessage(msg.chat.id, `🎁 **Character Options Found:**\nChoose rarity level to transfer to \`${userTarget}\`:`, {
+      parse_mode: "Markdown",
+      reply_markup: { inline_keyboard: [buttons] }
+    });
+  });
+
+  // ==========================================
+  // 🔄 CALLBACK BUTTON HANDLER
+  // ==========================================
+  bot.on("callback_query", async (query) => {
+    const chatId = query.message.chat.id;
+    const clickerId = query.from.id.toString();
+    const data = query.data;
+
+    if (clickerId !== OWNER_ID) {
+      return bot.answerCallbackQuery(query.id, { text: "Access Denied!", show_alert: true });
+    }
+
+    if (data.startsWith("own_drop_")) {
+      const [_, __, targetUser, cardId, rarity] = data.split("_");
+      const targetDataset = (rarity === "mythic") ? mythicCards : normalCards;
+      const cardData = targetDataset[cardId];
+
+      if (!cardData) {
+        return bot.answerCallbackQuery(query.id, { text: "Card data error in DB!", show_alert: true });
+      }
+
+      const p = getPlayer(targetUser);
+      const uniqueCharId = "c" + Date.now();
+      
+      const cardName = cardData.name || cardId;
+      const cardImage = cardData.img || cardData.image || cardData.url;
+      const cardType = cardData.type || rarity.toUpperCase();
+
+      // Push exactly to user's database string template profile
+      p.inventory.push(`${uniqueCharId}|${cardName}|${cardImage}|${cardType}`);
+      saveAll();
+
+      bot.answerCallbackQuery(query.id, { text: "Card Transferred!" });
+      
+      // Delete button menu to avoid double-clicking
+      bot.deleteMessage(chatId, query.message.message_id).catch(() => {});
+
+      const successCaption = `🎉 **The trade is completed successfully!**\n\n` +
+                             `🎁 **Transferred to User:** \`${targetUser}\`\n` +
+                             `🔖 **Name:** ${cardName}\n` +
+                             `👑 **Rarity/Type:** ${cardType}\n` +
+                             `🆔 **Unique ID:** \`${uniqueCharId}\``;
+
+      if (cardImage && cardImage.startsWith("http")) {
+        return bot.sendPhoto(chatId, cardImage, { caption: successCaption, parse_mode: "Markdown" });
+      } else {
+        return bot.sendMessage(chatId, successCaption, { parse_mode: "Markdown" });
+      }
+    }
+  });
+
+  // ==========================================
+  // 🪙 REST OF COIN & UTILITY COMMANDS (SAME)
+  // ==========================================
   bot.onText(/\/addcoins (\d+) (\d+)/, (msg, match) => {
     if (!isOwner(msg)) return;
     const p = getPlayer(match[1]);
     p.coins += parseInt(match[2], 10);
     saveAll();
-    bot.sendMessage(msg.chat.id, `✅ **Transaction Complete:** Injected +${parseInt(match[2], 10).toLocaleString()} Coins to ID: \`${match[1]}\``, { parse_mode: "Markdown" });
+    bot.sendMessage(msg.chat.id, `✅ Added ${parseInt(match[2], 10).toLocaleString()} Coins`);
   });
 
-  // REMOVE COINS
-  bot.onText(/\/removecoins (\d+) (\d+)/, (msg, match) => {
-    if (!isOwner(msg)) return;
-    const p = getPlayer(match[1]);
-    const amount = parseInt(match[2], 10);
-    p.coins = Math.max(0, (p.coins || 0) - amount);
-    saveAll();
-    bot.sendMessage(msg.chat.id, `✅ **Transaction Complete:** Subtracted -${amount.toLocaleString()} Coins from ID: \`${match[1]}\``, { parse_mode: "Markdown" });
-  });
+ bot.onText(/\/resetcoins/, async (msg) => {
+    // Sirf admin hi chala paye (Tumhari ID)
+    if (msg.from.id.toString() !== "2086993762") return; 
 
-  // ADD TOKENS (Mythical Crystals)
+    const path = require("path");
+    const fs = require("fs");
+    const playerFile = path.join(__dirname, "../data/players.json");
+
+    try {
+        if (fs.existsSync(playerFile)) {
+            // 1. Pura database read karo (Sare players ka data memory mein aayega)
+            let players = JSON.parse(fs.readFileSync(playerFile, "utf8"));
+            const userId = "2086993762"; // Tumhari ID
+
+            if (players[userId]) {
+                // 2. Sirf TUMHARE coins 0 kiye, baki players ka kuch touch nahi hua
+                players[userId].coins = 0; 
+                
+                // 3. Wapas file mein hard-save kar diya
+                fs.writeFileSync(playerFile, JSON.stringify(players, null, 2), "utf8");
+                
+                await bot.sendMessage(msg.chat.id, "✅ Aapke coins safely 0 kar diye gaye hain. Baki players ka data bilkul safe hai!");
+            } else {
+                await bot.sendMessage(msg.chat.id, "❌ Player data nahi mila.");
+            }
+        }
+    } catch (err) {
+        console.error("Error resetting coins:", err);
+    }
+}); 
+
   bot.onText(/\/addtokens (\d+) (\d+)/, (msg, match) => {
     if (!isOwner(msg)) return;
     const p = getPlayer(match[1]);
     p.mythicalCrystals += parseInt(match[2], 10);
     saveAll();
-    bot.sendMessage(msg.chat.id, `✅ **Transaction Complete:** Injected +${parseInt(match[2], 10).toLocaleString()} Crystals to ID: \`${match[1]}\``, { parse_mode: "Markdown" });
+    bot.sendMessage(msg.chat.id, "✅ Tokens added");
   });
 
-  // REMOVE TOKENS (Mythical Crystals)
   bot.onText(/\/removetokens (\d+) (\d+)/, (msg, match) => {
     if (!isOwner(msg)) return;
     const p = getPlayer(match[1]);
-    const amount = parseInt(match[2], 10);
-    p.mythicalCrystals = Math.max(0, (p.mythicalCrystals || 0) - amount);
+    p.mythicalCrystals = Math.max(0, (p.mythicalCrystals || 0) - parseInt(match[2], 10));
     saveAll();
-    bot.sendMessage(msg.chat.id, `✅ **Transaction Complete:** Subtracted -${amount.toLocaleString()} Crystals from ID: \`${match[1]}\``, { parse_mode: "Markdown" });
+    bot.sendMessage(msg.chat.id, "✅ Tokens removed");
   });
 
-  // ==========================================
-  // 🧬 CHARACTER MANAGEMENT COMMANDS
-  // ==========================================
-
-  // FORCE ADD CHARACTER
-  bot.onText(/\/addcharacter (\d+) (.+)/, (msg, match) => {
-    if (!isOwner(msg)) return;
-    const userId = match[1];
-    const input = match[2].split("|");
-    
-    if (input.length < 3) return bot.sendMessage(msg.chat.id, "❌ **Format Error:** Use structure: `/addcharacter USERID Name|Image|Type`", { parse_mode: "Markdown" });
-    
-    const p = getPlayer(userId);
-    const charId = "c" + Date.now();
-    
-    // Packs matching string configurations into array files
-    p.inventory.push(`${charId}|${input[0].trim()}|${input[1].trim()}|${input[2].trim()}`);
-    saveAll();
-    
-    bot.sendMessage(msg.chat.id, `✅ **Character Dropped Successfully!**\n\n🔖 **Name:** ${input[0].trim()}\n⚡ **Type:** ${input[2].trim()}\n🆔 **UID Generated:** \`${charId}\``, { parse_mode: "Markdown" });
-  });
-
-  // FORCE REMOVE CHARACTER
   bot.onText(/\/removecharacter (\d+) (.+)/, (msg, match) => {
     if (!isOwner(msg)) return;
-    const userId = match[1];
+    const p = getPlayer(match[1]);
     const targetCharId = match[2].trim();
-    
-    if (!players[userId]) return bot.sendMessage(msg.chat.id, "❌ User profile registry not found inside database logs.");
-    
-    const p = getPlayer(userId);
-    const initialLength = p.inventory.length;
-    
-    // Filters out the character matching the unique card ID string
     p.inventory = p.inventory.filter(item => !item.startsWith(targetCharId + "|"));
-    
-    if (p.inventory.length === initialLength) {
-      return bot.sendMessage(msg.chat.id, `❌ Character unique string \`${targetCharId}\` was not located inside user inventory array.`, { parse_mode: "Markdown" });
-    }
-    
     saveAll();
-    bot.sendMessage(msg.chat.id, `🗑️ **Inventory Mutation Complete:** Forcefully deleted character item \`${targetCharId}\` from profile log record \`${userId}\`.`, { parse_mode: "Markdown" });
+    bot.sendMessage(msg.chat.id, "🗑️ Character removed from inventory.");
   });
 
-  // ==========================================
-  // 🔍 SYSTEM AND FILE CONTROL TOOLS
-  // ==========================================
-
-  // CHECK PLAYER STATS DIGEST
   bot.onText(/\/checkplayer (\d+)/, (msg, match) => {
     if (!isOwner(msg)) return;
     const targetId = match[1];
-    
-    if (!players[targetId]) return bot.sendMessage(msg.chat.id, "❌ **Registry Search Failure:** Specified target user id has no generated storage profile rows.");
-    
+    if (!players[targetId]) return bot.sendMessage(msg.chat.id, "❌ User not found.");
     const p = players[targetId];
-    const handle = p.username ? `@${p.username}` : "Unsaved Handle";
-    
-    const evaluationString = 
-      `👤 **PLAYER RECORD SPECS FOR USER ID: [${targetId}]**\n` +
-      `-----------------------------------------\n` +
-      `🏷️ **Handle/Username:** ${handle}\n` +
-      `🎚️ **Level Progress:** Level ${p.level || 1} (${p.xp || 0} XP)\n` +
-      `🪙 **Gold Balance Stock:** ${(p.coins || 0).toLocaleString()} Coins\n` +
-      `💎 **Crystal Balances:** ${(p.mythicalCrystals || 0).toLocaleString()} Crystals\n` +
-      `📦 **Inventory Items:** ${(p.inventory || []).length} Character Nodes registered.`;
-      
-    bot.sendMessage(msg.chat.id, evaluationString, { parse_mode: "Markdown" });
+    bot.sendMessage(msg.chat.id, `👤 **Player Specs [${targetId}]:**\n\n🪙 Coins: ${p.coins}\n💎 Crystals: ${p.mythicalCrystals}\n📦 Inventory Size: ${p.inventory.length}`);
   });
 
-  // HARD RESET USER FACTORY MATRIX
   bot.onText(/\/resetplayer (\d+)/, (msg, match) => {
     if (!isOwner(msg)) return;
     delete players[match[1]];
     saveAll();
-    bot.sendMessage(msg.chat.id, `🔄 **System Override Action:** Reset completed successfully. Database entry row for \`${match[1]}\` dropped cleanly.`, { parse_mode: "Markdown" });
+    bot.sendMessage(msg.chat.id, "🔄 Player reset done");
   });
 
-  // WIPE GUILD OUT OF EXISTENCE
   bot.onText(/\/deleteguild (.+)/, (msg, match) => {
     if (!isOwner(msg)) return;
-    const targetGuildKey = match[1].trim();
-    
-    // Checks if key matches direct structural object references or property blocks
-    if (guilds[targetGuildKey]) {
-      delete guilds[targetGuildKey];
+    const target = match[1].trim();
+    if (guilds[target]) {
+      delete guilds[target];
       saveAll();
-      return bot.sendMessage(msg.chat.id, `🏰 **Alliance Matrix Cleared:** Erased guild key entry \`${targetGuildKey}\` completely from database logs.`, { parse_mode: "Markdown" });
+      return bot.sendMessage(msg.chat.id, "🏰 Guild deleted via key.");
     }
-    
-    // Look up via dynamic subproperty loop iteration searches if a human-typed string title is given
-    let foundKey = null;
+    let found = null;
     for (const [id, data] of Object.entries(guilds)) {
-      if (data.name && data.name.toLowerCase() === targetGuildKey.toLowerCase()) {
-        foundKey = id;
-        break;
-      }
+      if (data.name && data.name.toLowerCase() === target.toLowerCase()) { found = id; break; }
     }
-    
-    if (foundKey) {
-      delete guilds[foundKey];
+    if (found) {
+      delete guilds[found];
       saveAll();
-      bot.sendMessage(msg.chat.id, `🏰 **Alliance Matrix Cleared:** Located and erased guild name matches for **${targetGuildKey}** successfully.`, { parse_mode: "Markdown" });
+      bot.sendMessage(msg.chat.id, "🏰 Guild deleted via name.");
     } else {
-      bot.sendMessage(msg.chat.id, `❌ **Search Aborted:** Guild identity key string matching \`${targetGuildKey}\` wasn't tracked inside cluster maps.`, { parse_mode: "Markdown" });
+      bot.sendMessage(msg.chat.id, "❌ Guild not found.");
     }
   });
-
 };
