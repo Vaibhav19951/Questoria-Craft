@@ -37,7 +37,7 @@ process.on("unhandledRejection", err => {
 });
 
 // =========================
-// COMMAND LOADER
+// SINGLE CLEAN COMMAND LOADER
 // =========================
 const commandsPath = path.join(__dirname, "commands");
 
@@ -45,11 +45,18 @@ if (fs.existsSync(commandsPath)) {
   const files = fs.readdirSync(commandsPath).filter(f => f.endsWith(".js"));
 
   for (const file of files) {
+    // 🛑 SMOOTHLY SKIP ASSET FILES SO THEY DO NOT TRIGGER ERRORS
+    if (file === "assets.js" || file === "mythical.js" || file === "weapon.js") {
+      continue; 
+    }
+
     try {
       const cmd = require(`./commands/${file}`);
       if (typeof cmd === "function") {
         cmd(bot);
         console.log("✅ Loaded:", file);
+      } else {
+        console.log("⚠️ Skipped non-executable file:", file);
       }
     } catch (e) {
       console.log("❌ Error:", file, e.message);
@@ -81,7 +88,7 @@ bot.setMyCommands([
 .catch(err => console.log("❌ Menu error:", err.message));
 
 // =========================
-// START LOGS
+// RUNNING CHECKS
 // =========================
 setInterval(() => {
   console.log("🤖 Bot alive...");

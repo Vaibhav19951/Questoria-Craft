@@ -1,5 +1,3 @@
-
-
 const START_IMG =
   "https://i.pinimg.com/736x/e1/97/3e/e1973e8421e69bc09f731b60f5102d97.jpg";
 
@@ -220,311 +218,314 @@ const characters = [
     image: "https://pic-link-bot.lovable.app/i/telegram-1779345827680-5e8aa125.jpg"
   },
 
-// ❄️ Frost Hashira (Custom)
-{
-  id: "akari",
-  name: "Akari Yukimura",
-  anime: "Demon Slayer",
-  personality: ["calm", "elegant", "ruthless"],
-  description: "The Frost Hashira who freezes enemies before they can react.",
-  abilities: [
-    "Frost Breathing",
-    "Ice Mirror",
-    "Blizzard Slash"
-  ],
-  rank: "Hashira",
-  hp: 315,
-  attack: 42,
-  defense: 30,
-  speed: 40,
-  rarity: "SSR",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779345887171-b1efb23c.jpg"
-},
+  // ❄️ Frost Hashira (Custom)
+  {
+    id: "akari",
+    name: "Akari Yukimura",
+    anime: "Demon Slayer",
+    personality: ["calm", "elegant", "ruthless"],
+    description: "The Frost Hashira who freezes enemies before they can react.",
+    abilities: [
+      "Frost Breathing",
+      "Ice Mirror",
+      "Blizzard Slash"
+    ],
+    rank: "Hashira",
+    hp: 315,
+    attack: 42,
+    defense: 30,
+    speed: 40,
+    rarity: "SSR",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779345887171-b1efb23c.jpg"
+  },
 
-// 🌑 Shadow Slayer (Custom)
-{
-  id: "kuro",
-  name: "Kuro Hayashi",
-  anime: "Demon Slayer",
-  personality: ["silent", "mysterious", "cold"],
-  description: "A rogue demon slayer who uses shadow-based techniques.",
-  abilities: [
-    "Shadow Breathing",
-    "Silent Step",
-    "Night Slash"
-  ],
-  rank: "Kinoe",
-  hp: 210,
-  attack: 36,
-  defense: 19,
-  speed: 45,
-  rarity: "SR",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779346031463-1de7c939.jpg"
-},
+  // 🌑 Shadow Slayer (Custom)
+  {
+    id: "kuro",
+    name: "Kuro Hayashi",
+    anime: "Demon Slayer",
+    personality: ["silent", "mysterious", "cold"],
+    description: "A rogue demon slayer who uses shadow-based techniques.",
+    abilities: [
+      "Shadow Breathing",
+      "Silent Step",
+      "Night Slash"
+    ],
+    rank: "Kinoe",
+    hp: 210,
+    attack: 36,
+    defense: 19,
+    speed: 45,
+    rarity: "SR",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779346031463-1de7c939.jpg"
+  },
 
-// ⚡️ Storm Hashira (Custom)
-{
-  id: "raijin",
-  name: "Raijin Takeda",
-  anime: "Demon Slayer",
-  personality: ["aggressive", "loud", "fearless"],
-  description: "A Hashira who combines thunder and wind into storm attacks.",
-  abilities: [
-    "Storm Breathing",
-    "Thunder Cyclone",
-    "Sky Breaker"
-  ],
-  rank: "Hashira",
-  hp: 330,
-  attack: 47,
-  defense: 27,
-  speed: 43,
-  rarity: "SSR",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779346085384-6570df24.jpg"
-},
+  // ⚡️ Storm Hashira (Custom)
+  {
+    id: "raijin",
+    name: "Raijin Takeda",
+    anime: "Demon Slayer",
+    personality: ["aggressive", "loud", "fearless"],
+    description: "A Hashira who combines thunder and wind into storm attacks.",
+    abilities: [
+      "Storm Breathing",
+      "Thunder Cyclone",
+      "Sky Breaker"
+    ],
+    rank: "Hashira",
+    hp: 330,
+    attack: 47,
+    defense: 27,
+    speed: 43,
+    rarity: "SSR",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779346085384-6570df24.jpg"
+  },
 
-// 🌸 Bloom Slayer (Custom)
-{
-  id: "hana",
-  name: "Hana Mizuno",
-  anime: "Demon Slayer",
-  personality: ["kind", "cheerful", "brave"],
-  description: "A gentle fighter who uses flower-based illusions.",
-  abilities: [
-    "Bloom Breathing",
-    "Petal Dance",
-    "Blossom Strike"
-  ],
-  rank: "Tsuguko",
-  hp: 170,
-  attack: 29,
-  defense: 18,
-  speed: 34,
-  rarity: "SR",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779346108792-e6697c48.jpg"
-},
+  // 🌸 Bloom Slayer (Custom)
+  {
+    id: "hana",
+    name: "Hana Mizuno",
+    anime: "Demon Slayer",
+    personality: ["kind", "cheerful", "brave"],
+    description: "A gentle fighter who uses flower-based illusions.",
+    abilities: [
+      "Bloom Breathing",
+      "Petal Dance",
+      "Blossom Strike"
+    ],
+    rank: "Tsuguko",
+    hp: 170,
+    attack: 29,
+    defense: 18,
+    speed: 34,
+    rarity: "SR",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779346108792-e6697c48.jpg"
+  },
 
-// 🔥 Ash Demon Slayer (Custom)
-{
-  id: "kaen",
-  name: "Kaen Ryuji",
-  anime: "Demon Slayer",
-  personality: ["hot-headed", "determined", "loyal"],
-  description: "A former trainee of Flame Breathing who created his own Ash style.",
-  abilities: [
-    "Ash Breathing",
-    "Burning Veil",
-    "Smokescreen Slash"
-  ],
-  rank: "Kanoe",
-  hp: 190,
-  attack: 33,
-  defense: 21,
-  speed: 28,
-  rarity: "SR",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779346174880-db9214fd.jpg"
-},
+  // 🔥 Ash Demon Slayer (Custom)
+  {
+    id: "kaen",
+    name: "Kaen Ryuji",
+    anime: "Demon Slayer",
+    personality: ["hot-headed", "determined", "loyal"],
+    description: "A former trainee of Flame Breathing who created his own Ash style.",
+    abilities: [
+      "Ash Breathing",
+      "Burning Veil",
+      "Smokescreen Slash"
+    ],
+    rank: "Kanoe",
+    hp: 190,
+    attack: 33,
+    defense: 21,
+    speed: 28,
+    rarity: "SR",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779346174880-db9214fd.jpg"
+  },
 
-// 🌌 Cosmic Hashira (Custom - OP character)
-{
-  id: "orion",
-  name: "Orion Kazuki",
-  anime: "Demon Slayer",
-  personality: ["wise", "calm", "detached"],
-  description: "A legendary Hashira said to wield the power of the stars.",
-  abilities: [
-    "Cosmic Breathing",
-    "Starfall",
-    "Galaxy Slice"
-  ],
-  rank: "Hashira",
-  hp: 360,
-  attack: 52,
-  defense: 35,
-  speed: 38,
-  rarity: "UR",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779346196278-50a29c00.jpg"
-},
+  // 🌌 Cosmic Hashira (Custom - OP character)
+  {
+    id: "orion",
+    name: "Orion Kazuki",
+    anime: "Demon Slayer",
+    personality: ["wise", "calm", "detached"],
+    description: "A legendary Hashira said to wield the power of the stars.",
+    abilities: [
+      "Cosmic Breathing",
+      "Starfall",
+      "Galaxy Slice"
+    ],
+    rank: "Hashira",
+    hp: 360,
+    attack: 52,
+    defense: 35,
+    speed: 38,
+    rarity: "UR",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779346196278-50a29c00.jpg"
+  },
 
-// 🌌 Witch (Custom - OP character)
-{
-  id: "Shoko",
-  name: "Shoko Nobara",
-  anime: "Demon Slayer",
-  personality: ["wise", "calm", "kind"],
-  description: "A legendary Witch Only can access by Administrator.",
-  abilities: [
-    "Admin Menu",
-    "1000 cut",
-    "Bot Slice"
-  ],
-  rank: "GoD",
-  hp: 4000,
-  attack: 520,
-  defense: 350,
-  speed: 380,
-  rarity: "SSR",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779345976501-074dd29d.jpg"
-},
+  // 🌌 Witch (Custom - OP character)
+  {
+    id: "Shoko",
+    name: "Shoko Nobara",
+    anime: "Demon Slayer",
+    personality: ["wise", "calm", "kind"],
+    description: "A legendary Witch Only can access by Administrator.",
+    abilities: [
+      "Admin Menu",
+      "1000 cut",
+      "Bot Slice"
+    ],
+    rank: "GoD",
+    hp: 4000,
+    attack: 520,
+    defense: 350,
+    speed: 380,
+    rarity: "SSR",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779345976501-074dd29d.jpg"
+  },
 
- // 🟢 Mizunoto Rank (Beginner)
-{
-  id: "daichi",
-  name: "Daichi Sato",
-  anime: "Demon Slayer",
-  personality: ["brave", "reckless", "loyal"],
-  description: "A rookie demon slayer still learning control over his breathing.",
-  abilities: [
-    "Basic Water Breathing",
-    "Quick Slash"
-  ],
-  rank: "Mizunoto",
-  hp: 80,
-  attack: 12,
-  defense: 8,
-  speed: 10,
-  rarity: "Common",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779346302261-fbcf3a7b.jpg"
-},// 🟢 Mizunoto Rank
-{
-  id: "yuki",
-  name: "Yuki Tanaka",
-  anime: "Demon Slayer",
-  personality: ["kind", "timid", "focused"],
-  description: "A careful fighter who prioritizes defense over attack.",
-  abilities: [
-    "Basic Defense Form",
-    "Evade"
-  ],
-  rank: "Mizunoto",
-  hp: 90,
-  attack: 9,
-  defense: 14,
-  speed: 11,
-  rarity: "Common",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779346347304-ccbf990b.jpg"
-},
+  // 🟢 Mizunoto Rank (Beginner)
+  {
+    id: "daichi",
+    name: "Daichi Sato",
+    anime: "Demon Slayer",
+    personality: ["brave", "reckless", "loyal"],
+    description: "A rookie demon slayer still learning control over his breathing.",
+    abilities: [
+      "Basic Water Breathing",
+      "Quick Slash"
+    ],
+    rank: "Mizunoto",
+    hp: 80,
+    attack: 12,
+    defense: 8,
+    speed: 10,
+    rarity: "Common",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779346302261-fbcf3a7b.jpg"
+  },
 
-// 🔵 Mizunoe Rank
-{
-  id: "haru",
-  name: "Haru Kobayashi",
-  anime: "Demon Slayer",
-  personality: ["calm", "disciplined", "quiet"],
-  description: "A steady swordsman with improved breathing control.",
-  abilities: [
-    "Water Breathing 1st Form",
-    "Flowing Strike"
-  ],
-  rank: "Mizunoe",
-  hp: 110,
-  attack: 16,
-  defense: 12,
-  speed: 14,
-  rarity: "Common",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779346403935-c002fd05.jpg"
-},
+  // 🟢 Mizunoto Rank
+  {
+    id: "yuki",
+    name: "Yuki Tanaka",
+    anime: "Demon Slayer",
+    personality: ["kind", "timid", "focused"],
+    description: "A careful fighter who prioritizes defense over attack.",
+    abilities: [
+      "Basic Defense Form",
+      "Evade"
+    ],
+    rank: "Mizunoto",
+    hp: 90,
+    attack: 9,
+    defense: 14,
+    speed: 11,
+    rarity: "Common",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779346347304-ccbf990b.jpg"
+  },
 
-// 🔵 Mizunoe Rank
-{
-  id: "ren",
-  name: "Ren Ishida",
-  anime: "Demon Slayer",
-  personality: ["smart", "strategic", "serious"],
-  description: "Uses tactics to outmaneuver demons rather than brute force.",
-  abilities: [
-    "Trap Setting",
-    "Precision Slash"
-  ],
-  rank: "Mizunoe",
-  hp: 100,
-  attack: 18,
-  defense: 11,
-  speed: 15,
-  rarity: "Common",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779346515208-9714775f.jpg"
-},
+  // 🔵 Mizunoe Rank
+  {
+    id: "haru",
+    name: "Haru Kobayashi",
+    anime: "Demon Slayer",
+    personality: ["calm", "disciplined", "quiet"],
+    description: "A steady swordsman with improved breathing control.",
+    abilities: [
+      "Water Breathing 1st Form",
+      "Flowing Strike"
+    ],
+    rank: "Mizunoe",
+    hp: 110,
+    attack: 16,
+    defense: 12,
+    speed: 14,
+    rarity: "Common",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779346403935-c002fd05.jpg"
+  },
 
-// 🟡 Kanoto Rank
-{
-  id: "sora",
-  name: "Sora Aizawa",
-  anime: "Demon Slayer",
-  personality: ["energetic", "fast", "competitive"],
-  description: "A quick fighter specializing in speed-based attacks.",
-  abilities: [
-    "Wind Breathing (Basic)",
-    "Dash Strike"
-  ],
-  rank: "Kanoto",
-  hp: 120,
-  attack: 20,
-  defense: 13,
-  speed: 22,
-  rarity: "Uncommon",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779346551992-24806470.jpg"
-},
+  // 🔵 Mizunoe Rank
+  {
+    id: "ren",
+    name: "Ren Ishida",
+    anime: "Demon Slayer",
+    personality: ["smart", "strategic", "serious"],
+    description: "Uses tactics to outmaneuver demons rather than brute force.",
+    abilities: [
+      "Trap Setting",
+      "Precision Slash"
+    ],
+    rank: "Mizunoe",
+    hp: 100,
+    attack: 18,
+    defense: 11,
+    speed: 15,
+    rarity: "Common",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779346515208-9714775f.jpg"
+  },
 
-// 🟡 Kanoto Rank
-{
-  id: "mei",
-  name: "Mei Kuroda",
-  anime: "Demon Slayer",
-  personality: ["cheerful", "supportive", "brave"],
-  description: "A support-type slayer who boosts allies.",
-  abilities: [
-    "Healing Breath",
-    "Encourage"
-  ],
-  rank: "Kanoto",
-  hp: 115,
-  attack: 14,
-  defense: 16,
-  speed: 13,
-  rarity: "Uncommon",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779346453156-ec74d288.jpg"
-},
+  // 🟡 Kanoto Rank
+  {
+    id: "sora",
+    name: "Sora Aizawa",
+    anime: "Demon Slayer",
+    personality: ["energetic", "fast", "competitive"],
+    description: "A quick fighter specializing in speed-based attacks.",
+    abilities: [
+      "Wind Breathing (Basic)",
+      "Dash Strike"
+    ],
+    rank: "Kanoto",
+    hp: 120,
+    attack: 20,
+    defense: 13,
+    speed: 22,
+    rarity: "Uncommon",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779346551992-24806470.jpg"
+  },
 
-// 🟠 Kanoe Rank
-{
-  id: "takumi",
-  name: "Takumi Fujiwara",
-  anime: "Demon Slayer",
-  personality: ["determined", "focused", "quiet"],
-  description: "A skilled fighter close to Hashira-level potential.",
-  abilities: [
-    "Flame Breathing (Advanced)",
-    "Blazing Slash"
-  ],
-  rank: "Kanoe",
-  hp: 150,
-  attack: 26,
-  defense: 18,
-  speed: 20,
-  rarity: "SR",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779346608545-019f096f.jpg"
-},
+  // 🟡 Kanoto Rank
+  {
+    id: "mei",
+    name: "Mei Kuroda",
+    anime: "Demon Slayer",
+    personality: ["cheerful", "supportive", "brave"],
+    description: "A support-type slayer who boosts allies.",
+    abilities: [
+      "Healing Breath",
+      "Encourage"
+    ],
+    rank: "Kanoto",
+    hp: 115,
+    attack: 14,
+    defense: 16,
+    speed: 13,
+    rarity: "Uncommon",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779346453156-ec74d288.jpg"
+  },
 
-// 🟠 Kanoe Rank
-{
-  id: "rika",
-  name: "Rika Hoshino",
-  anime: "Demon Slayer",
-  personality: ["cold", "precise", "independent"],
-  description: "A precise swordswoman with deadly accuracy.",
-  abilities: [
-    "Ice Breathing (Basic)",
-    "Frozen Strike"
-  ],
-  rank: "Kanoe",
-  hp: 140,
-  attack: 24,
-  defense: 17,
-  speed: 21,
-  rarity: "SR",
-  image: "https://pic-link-bot.lovable.app/i/telegram-1779346662082-72f05640.jpg"
-}
+  // 🟠 Kanoe Rank
+  {
+    id: "takumi",
+    name: "Takumi Fujiwara",
+    anime: "Demon Slayer",
+    personality: ["determined", "focused", "quiet"],
+    description: "A skilled fighter close to Hashira-level potential.",
+    abilities: [
+      "Flame Breathing (Advanced)",
+      "Blazing Slash"
+    ],
+    rank: "Kanoe",
+    hp: 150,
+    attack: 26,
+    defense: 18,
+    speed: 20,
+    rarity: "SR",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779346608545-019f096f.jpg"
+  },
+
+  // 🟠 Kanoe Rank
+  {
+    id: "rika",
+    name: "Rika Hoshino",
+    anime: "Demon Slayer",
+    personality: ["cold", "precise", "independent"],
+    description: "A precise swordswoman with deadly accuracy.",
+    abilities: [
+      "Ice Breathing (Basic)",
+      "Frozen Strike"
+    ],
+    rank: "Kanoe",
+    hp: 140,
+    attack: 24,
+    defense: 17,
+    speed: 21,
+    rarity: "SR",
+    image: "https://pic-link-bot.lovable.app/i/telegram-1779346662082-72f05640.jpg"
+  }
 ];
+
 module.exports = {
   characters,
   START_IMG,

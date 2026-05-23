@@ -1,4 +1,4 @@
-module.exports = [
+const mythical = [
   {
     id: "tanjiro_limited",
     name: "Tanjiro Kamado [Sun Breathing Limited]",
@@ -135,3 +135,5 @@ module.exports = [
     image: "https://i.pinimg.com/736x/4a/3b/a8/4a3ba8b84645185055a4469e85c62173.jpg"
   }
 ];
+
+module.exports = { mythical };
