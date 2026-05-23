@@ -156,7 +156,8 @@ module.exports = (bot) => {
         const player = getPlayer(userId);
         const rewardCoins = Math.abs(Number(demon.reward)) || 50;
         const rewardXp = Math.abs(Number(demon.exp)) || 20;
-
+        console.log(demon.reward, demon.exp);
+        
         player.coins += rewardCoins;
         player.xp += rewardXp;
 
