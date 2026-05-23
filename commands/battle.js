@@ -154,8 +154,8 @@ module.exports = (bot) => {
 
         // Fetch user data & add math rewards
         const player = getPlayer(userId);
-        const rewardCoins = Number(demon.reward) || 50;
-        const rewardXp = Number(demon.exp) || 20;
+        const rewardCoins = Math.abs(Number(demon.reward)) || 50;
+        const rewardXp = Math.abs(Number(demon.exp)) || 20;
 
         player.coins += rewardCoins;
         player.xp += rewardXp;
