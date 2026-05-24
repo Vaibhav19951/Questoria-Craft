@@ -106,7 +106,10 @@ bot.setMyCommands([
   { command: "battle", description: "Fight demons" },
   { command: "summon", description: "Summon character" },
 
-  { command: "profile", description: "View profile" }
+  { command: "profile", description: "View profile" },
+  { command: "economy", description: "economy features" },
+    { command: "upgrade", description: "use essence" },
+    { command: "spin", description: "spin" }
 ])
 .then(() => console.log("📜 Menu loaded"))
 .catch(err => console.log("❌ Menu error:", err.message));
