@@ -1,8 +1,6 @@
 // ==========================================
 // ⚔️ NICHIRIN FORGE | CHARACTER UPGRADE ENGINE
 // ==========================================
-const { getDB, saveDB, sanitizeUserObject } = require('./economy');
-
 const mythicCards = [
     { id: "tanjiro_mythic", name: "Kamado Tanjiro (Sun Breathing)" },
     { id: "nezuko_mythic", name: "Kamado Nezuko (Awakened Form)" },
@@ -15,8 +13,10 @@ module.exports = (bot) => {
         const chatId = msg.chat.id;
         const userId = msg.from.id.toString();
 
-        let db = getDB();
-        db[userId] = sanitizeUserObject(db[userId]);
+        if (!global.economyDB) return console.log("⚠️ Economy Core not loaded yet!");
+
+        let db = global.economyDB.getDB();
+        db[userId] = global.economyDB.sanitizeUserObject(db[userId]);
         let p = db[userId];
 
         const inputChar = match[1] ? match[1].trim().toLowerCase() : "";
@@ -81,8 +81,8 @@ module.exports = (bot) => {
         charObject.level += 1;
         p.inventory[baseCharIndex] = charObject;
 
-        db[userId] = sanitizeUserObject(p);
-        saveDB(db);
+        db[userId] = global.economyDB.sanitizeUserObject(p);
+        global.economyDB.saveDB(db);
 
         let basePower = charObject.level * 150;
         let originalPower = (charObject.level - 1) * 150;
