@@ -2,7 +2,7 @@
 // ⚔️ DEMON SLAYER BATTLE SYSTEM
 // ========================================
 
-const demons = require("../asset/demon");
+const demons = require("../asset/demons");
 
 console.log("✅ battle.js loaded");
 
