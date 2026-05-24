@@ -1,33 +1,19 @@
-// ==========================================================
-// ⚔️ AUTOMATED CORPS BATTLE SYSTEM | VELIX OS V2.5
-// ==========================================================
-
 const fs = require("fs");
 const path = require("path");
 
-// Demon data connect kiya assets folder se
-const demonData = require(path.join(process.cwd(), "assets", "demon.js"));
-
+// Fix: Folder ka naam 'asset' hai
+const demonData = require(path.join(process.cwd(), "asset", "demon.js"));
 const activeBattles = new Map();
 
 module.exports = (bot) => {
-
     bot.onText(/\/battle/, (msg) => {
         const chatId = msg.chat.id;
         const userId = msg.from.id.toString();
-
-        if (!global.economyDB) {
-            return bot.sendMessage(chatId, "🚨 **System Error:** Economy Engine not detected.");
-        }
-
-        let db = global.economyDB.getDB();
-        db[userId] = global.economyDB.sanitizeUserObject(db[userId]);
 
         if (activeBattles.has(userId)) {
             return bot.sendMessage(chatId, "⚔️ **Combat Lock!** Finish your current battle first.");
         }
 
-        // Demon data select kiya
         const demon = demonData[Math.floor(Math.random() * demonData.length)];
         const session = {
             playerHp: 500, playerMaxHp: 500, playerAtk: 40,
@@ -37,16 +23,15 @@ module.exports = (bot) => {
 
         activeBattles.set(userId, session);
 
-        // Demon ki specific image bhej rahe hain
+        // Fix: 'asset' folder ke andar image path look-up
         const imagePath = path.join(process.cwd(), demon.image);
 
+        if (!fs.existsSync(imagePath)) {
+            return bot.sendMessage(chatId, `⚠️ **Image missing at:** \`${demon.image}\``);
+        }
+
         bot.sendPhoto(chatId, imagePath, {
-            caption: `👹 **DEMON ENCOUNTER | ${demon.name}**\n` +
-                     `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                     `❤️ **Your HP:** \`500/500\` | ⚔️ **Atk:** \`40\`\n` +
-                     `🖤 **Demon HP:** \`${demon.hp}/${demon.hp}\` | 💢 **Atk:** \`${demon.attack}\`\n` +
-                     `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                     `Choose your breathing form:`,
+            caption: `👹 **ENCOUNTER: ${demon.name}**\n━━━━━━━━━━━━━━━━━━━━━━━━\n❤️ Your HP: 500 | ⚔️ Atk: 40\n🖤 Demon HP: ${demon.hp} | 💢 Atk: ${demon.attack}`,
             parse_mode: "Markdown",
             reply_markup: JSON.stringify({
                 inline_keyboard: [
@@ -57,6 +42,7 @@ module.exports = (bot) => {
         });
     });
 
+    // Callback logic wahi rahegi
     bot.on("callback_query", async (query) => {
         if (!query.data.startsWith("slay_")) return;
 
@@ -83,7 +69,7 @@ module.exports = (bot) => {
                 db[callerId].coins += session.rewardCoins;
                 db[callerId].mythic += session.rewardTokens;
                 global.economyDB.saveDB(db);
-                return bot.editMessageCaption(`🏆 **VICTORY!** You defeated ${session.demonName}. [+${session.rewardCoins} Coins]`, { chat_id: query.message.chat.id, message_id: query.message.message_id });
+                return bot.editMessageCaption(`🏆 **VICTORY!** You defeated ${session.demonName}.`, { chat_id: query.message.chat.id, message_id: query.message.message_id });
             }
             session.playerHp -= Math.max(5, Math.floor(Math.random() * 15) + (session.demonAtk - 10));
         }
