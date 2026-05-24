@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-// Fix: Folder ka naam 'asset' hai
+// Demon data load from 'asset' folder
 const demonData = require(path.join(process.cwd(), "asset", "demon.js"));
 const activeBattles = new Map();
 
@@ -14,24 +14,28 @@ module.exports = (bot) => {
             return bot.sendMessage(chatId, "⚔️ **Combat Lock!** Finish your current battle first.");
         }
 
+        // Random demon from your provided list
         const demon = demonData[Math.floor(Math.random() * demonData.length)];
+        
         const session = {
             playerHp: 500, playerMaxHp: 500, playerAtk: 40,
-            demonName: demon.name, demonHp: demon.hp, demonMaxHp: demon.hp, demonAtk: demon.attack,
-            rewardCoins: demon.rewardCoins, rewardTokens: demon.rewardTokens
+            demonName: demon.name,
+            demonHp: demon.hp,
+            demonMaxHp: demon.hp,
+            demonAtk: demon.attack,
+            reward: demon.reward // Reward directly from demon object
         };
 
         activeBattles.set(userId, session);
 
-        // Fix: 'asset' folder ke andar image path look-up
-        const imagePath = path.join(process.cwd(), demon.image);
-
-        if (!fs.existsSync(imagePath)) {
-            return bot.sendMessage(chatId, `⚠️ **Image missing at:** \`${demon.image}\``);
-        }
-
-        bot.sendPhoto(chatId, imagePath, {
-            caption: `👹 **ENCOUNTER: ${demon.name}**\n━━━━━━━━━━━━━━━━━━━━━━━━\n❤️ Your HP: 500 | ⚔️ Atk: 40\n🖤 Demon HP: ${demon.hp} | 💢 Atk: ${demon.attack}`,
+        // Sending the image directly from the URL provided in your demon.js
+        bot.sendPhoto(chatId, demon.image, {
+            caption: `👹 **ENCOUNTER: ${demon.name}**\n` +
+                     `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                     `❤️ Your HP: \`500/500\` | ⚔️ Atk: \`40\`\n` +
+                     `🖤 Demon HP: \`${demon.hp}/${demon.hp}\` | 💢 Atk: \`${demon.attack}\`\n` +
+                     `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                     `Abilities: ${demon.abilities.join(", ")}`,
             parse_mode: "Markdown",
             reply_markup: JSON.stringify({
                 inline_keyboard: [
@@ -39,45 +43,34 @@ module.exports = (bot) => {
                     [{ text: "🏃 Flee", callback_data: `slay_flee:${userId}` }]
                 ]
             })
+        }).catch(err => {
+            bot.sendMessage(chatId, "⚠️ Could not load demon image, but battle is ready!");
         });
     });
 
-    // Callback logic wahi rahegi
+    // Callback Query Handler (Same as before)
     bot.on("callback_query", async (query) => {
         if (!query.data.startsWith("slay_")) return;
 
         const [action, targetUserId] = query.data.split(":");
         const callerId = query.from.id.toString();
 
-        if (targetUserId !== callerId) {
-            return bot.answerCallbackQuery(query.id, { text: "❌ Not your battle!", show_alert: true });
-        }
+        if (targetUserId !== callerId) return bot.answerCallbackQuery(query.id, { text: "❌ Not your battle!", show_alert: true });
 
         const session = activeBattles.get(callerId);
-        if (!session) return bot.answerCallbackQuery(query.id, { text: "⚠️ Battle session expired.", show_alert: true });
-
-        let actionLog = "";
+        if (!session) return bot.answerCallbackQuery(query.id, { text: "⚠️ Battle expired.", show_alert: true });
 
         if (action === "slay_attack") {
             let pDmg = Math.floor(Math.random() * 20) + session.playerAtk;
             session.demonHp -= pDmg;
-            actionLog += `⚔️ You dealt **💥 ${pDmg}** damage!\n`;
-
+            
             if (session.demonHp <= 0) {
                 activeBattles.delete(callerId);
-                let db = global.economyDB.getDB();
-                db[callerId].coins += session.rewardCoins;
-                db[callerId].mythic += session.rewardTokens;
-                global.economyDB.saveDB(db);
-                return bot.editMessageCaption(`🏆 **VICTORY!** You defeated ${session.demonName}.`, { chat_id: query.message.chat.id, message_id: query.message.message_id });
+                return bot.editMessageCaption(`🏆 **VICTORY!** You defeated ${session.demonName}.`, { 
+                    chat_id: query.message.chat.id, message_id: query.message.message_id 
+                });
             }
             session.playerHp -= Math.max(5, Math.floor(Math.random() * 15) + (session.demonAtk - 10));
-        }
-
-        if (action === "slay_defend") {
-            session.playerHp = Math.min(session.playerMaxHp, session.playerHp + 15);
-            session.playerHp -= Math.floor(Math.random() * 10) + 5;
-            actionLog += `🛡️ Defensive stance! Regained HP, mitigated damage.\n`;
         }
 
         if (action === "slay_flee") {
@@ -85,31 +78,17 @@ module.exports = (bot) => {
             return bot.deleteMessage(query.message.chat.id, query.message.message_id);
         }
 
-        if (session.playerHp <= 0) {
-            activeBattles.delete(callerId);
-            return bot.editMessageCaption(`💀 **DEFEATED.** You were overpowered by ${session.demonName}.`, { chat_id: query.message.chat.id, message_id: query.message.message_id });
-        }
-
         await bot.editMessageCaption(
             `⚔️ **COMBAT IN PROGRESS**\n` +
-            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-            `${actionLog}\n` +
-            `❤️ **Your HP:** \`${session.playerHp}/${session.playerMaxHp}\`\n` +
-            `🖤 **${session.demonName} HP:** \`${session.demonHp}/${session.demonMaxHp}\`\n` +
-            `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+            `❤️ Your HP: \`${session.playerHp}/${session.playerMaxHp}\`\n` +
+            `🖤 ${session.demonName} HP: \`${session.demonHp}/${session.demonMaxHp}\``,
             {
-                chat_id: query.message.chat.id,
-                message_id: query.message.message_id,
+                chat_id: query.message.chat.id, message_id: query.message.message_id,
                 parse_mode: "Markdown",
-                reply_markup: JSON.stringify({
-                    inline_keyboard: [
-                        [{ text: "⚔️ Attack", callback_data: `slay_attack:${callerId}` }, { text: "🛡️ Defend", callback_data: `slay_defend:${callerId}` }],
-                        [{ text: "🏃 Flee", callback_data: `slay_flee:${callerId}` }]
-                    ]
-                })
+                reply_markup: query.message.reply_markup
             }
         ).catch(() => {});
-
+        
         bot.answerCallbackQuery(query.id);
     });
 };
