@@ -13,6 +13,23 @@ const safeReadJSON = (filePath) => {
   return {};
 };
 
+// Sanitization Shield inside interface router to avoid rendering NaN
+const sanitizeStats = (stats) => {
+  let s = stats || {};
+  return {
+    coins: Math.max(0, parseInt(s.coins) || 0),
+    bank: Math.max(0, parseInt(s.bank) || 0),
+    crystals: Math.max(0, parseInt(s.crystals) || 0),
+    mythic: Math.max(0, parseInt(s.mythic) || 0),
+    level: Math.max(1, parseInt(s.level) || 1),
+    exp: Math.max(0, parseInt(s.exp) || 0),
+    guildId: s.guildId || null,
+    inventory: Array.isArray(s.inventory) ? s.inventory : [],
+    materials: s.materials && typeof s.materials === 'object' ? s.materials : {},
+    active_task: s.active_task || null
+  };
+};
+
 // Helper function to build Main Dashboard Layout
 const buildMainCaption = (username, stats, userGuild) => {
   let taskText = "_No active mission. Type /task to assign one!_";
@@ -28,14 +45,14 @@ const buildMainCaption = (username, stats, userGuild) => {
 🏰 **GUILD:** \`${userGuild}\`
 
 📈 **RANK STATUS:**
-├ 🔺 **Level:** \`${stats.level || 1}\`
-└ 🧪 **EXP:** \`${stats.exp || 0} XP\`
+├ 🔺 **Level:** \`${stats.level}\`
+└ 🧪 **EXP:** \`${stats.exp} XP\`
 
 💰 **ASSET WALLET:**
-├ 🪙 **Coins:** \`${(stats.coins || 0).toLocaleString()}\`
-├ 🏦 **Bank:** \`${(stats.bank || 0).toLocaleString()}\`
-├ 💎 **Crystals:** \`${(stats.crystals || 0).toLocaleString()}\`
-└ ✨ **Mythic Tokens:** \`${(stats.mythic || 0).toLocaleString()}\`
+├ 🪙 **Coins:** \`${stats.coins.toLocaleString()}\`
+├ 🏦 **Bank:** \`${stats.bank.toLocaleString()}\`
+├ 💎 **Crystals:** \`${stats.crystals.toLocaleString()}\`
+└ ✨ **Mythic Tokens:** \`${stats.mythic.toLocaleString()}\`
 
 📋 **DAILY MISSION STATUS:**${taskText}
 ━━━━━━━━━━━━━━━━━━━━━━━━`;
@@ -50,7 +67,7 @@ module.exports = (bot) => {
     const players = safeReadJSON(playerFile);
     const guilds = safeReadJSON(guildFile);
     
-    const stats = players[userId] || { coins: 500, bank: 0, crystals: 0, mythic: 0, level: 1, exp: 0, guildId: null, inventory: [], active_task: null };
+    const stats = sanitizeStats(players[userId]);
     const userGuild = stats.guildId && guilds[stats.guildId] ? guilds[stats.guildId].name : "No Guild Joined";
 
     const mainCaption = buildMainCaption(msg.from.first_name, stats, userGuild);
@@ -60,7 +77,7 @@ module.exports = (bot) => {
       parse_mode: "Markdown",
       reply_markup: { 
         inline_keyboard: [
-          [{ text: "🎒 Inventory", callback_data: `inv_${userId}` }, { text: "👑 Cards", callback_data: `char_${userId}` }], 
+          [{ text: "🎒 Inventory Bag", callback_data: `inv_${userId}` }, { text: "👑 Card Roster", callback_data: `char_${userId}` }], 
           [{ text: "🏰 Guild", callback_data: `gld_${userId}` }, { text: "🔄 Refresh Hub", callback_data: `main_${userId}` }]
         ] 
       }
@@ -84,7 +101,7 @@ module.exports = (bot) => {
 
     const players = safeReadJSON(playerFile);
     const guilds = safeReadJSON(guildFile);
-    const stats = players[targetUserId] || { coins: 500, bank: 0, crystals: 0, mythic: 0, level: 1, exp: 0, guildId: null, inventory: [], active_task: null };
+    const stats = sanitizeStats(players[targetUserId]);
     const userGuild = stats.guildId && guilds[stats.guildId] ? guilds[stats.guildId].name : "No Guild Joined";
     let updatedCaption = "";
 
@@ -92,12 +109,36 @@ module.exports = (bot) => {
       updatedCaption = buildMainCaption(query.from.first_name, stats, userGuild);
     } 
     else if (action === "inv") {
-      updatedCaption = `🎒 **INVENTORY BAG**\n━━━━━━━━━━━━━━━━━━━━━━━━\n` + 
-                       (stats.inventory && stats.inventory.length > 0 ? stats.inventory.map(item => `• ${item}`).join("\n") : "_Your inventory bag is completely empty!_");
+      // 🎒 BAG: Shows raw crafting materials and essence balances
+      let essenceEntries = Object.entries(stats.materials).filter(([_, count]) => (parseInt(count) || 0) > 0);
+      let materialText = "";
+
+      if (essenceEntries.length === 0) {
+        materialText = "_Your item bags are completely empty! Pull duplicates to gather components._";
+      } else {
+        materialText = essenceEntries.map(([key, value]) => `• 🧪 **${key.replace('_', ' ').toUpperCase()}:** \`${value}\` pcs`).join("\n");
+      }
+
+      updatedCaption = `🎒 **STORAGE BAG (MATERIALS)**\n━━━━━━━━━━━━━━━━━━━━━━━━\n${materialText}\n━━━━━━━━━━━━━━━━━━━━━━━━\n💡 *Use these character essences to unleash rank ascension updates via /upgrade.*`;
     }
     else if (action === "char") {
-      const totalCards = stats.inventory ? stats.inventory.length : 0;
-      updatedCaption = `👑 **CHARACTER COLLECTION**\n━━━━━━━━━━━━━━━━━━━━━━━━\nTotal Cards Unlocked: \`${totalCards}\`\n\n_Use /spin or /summon to unlock rare character drops!_`;
+      // 👑 ROSTER: Compiles dynamic warrior levels, power configurations and stars
+      let characterText = "";
+
+      if (stats.inventory.length === 0) {
+        characterText = "_No slayers recruited yet! Use /spin to extract rare warrior units._";
+      } else {
+        characterText = stats.inventory.map((item, idx) => {
+          let cName = typeof item === "string" ? item : (item.name || "Unknown Slayer");
+          let cLevel = typeof item === "string" ? 1 : (parseInt(item.level) || 1);
+          let levelStars = "⭐".repeat(cLevel);
+          let powerMetric = cLevel * 150;
+
+          return `\`${idx + 1}.\` 👤 **${cName}**\n     ┗ 💠 [Lv. ${cLevel}] ${levelStars} | ⚡ \`${powerMetric} CP\``;
+        }).join("\n\n");
+      }
+
+      updatedCaption = `👑 **WARRIOR SQUAD ROSTER**\n━━━━━━━━━━━━━━━━━━━━━━━━\n${characterText}\n━━━━━━━━━━━━━━━━━━━━━━━━\n💡 *To ascend any character rank: Type \`/upgrade <name>\` in chat.*`;
     }
     else if (action === "gld") {
       updatedCaption = `🏰 **GUILD HUB INFO**\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔹 **Current Guild:** \`${userGuild}\`\n🔹 **Guild Faction ID:** \`${stats.guildId || "None"}\`\n\n_Cooperate with your guild members to unlock massive vault upgrades!_`;
@@ -110,7 +151,7 @@ module.exports = (bot) => {
         parse_mode: "Markdown",
         reply_markup: { 
           inline_keyboard: [
-            [{ text: "🎒 Inventory", callback_data: `inv_${targetUserId}` }, { text: "👑 Cards", callback_data: `char_${targetUserId}` }], 
+            [{ text: "🎒 Inventory Bag", callback_data: `inv_${targetUserId}` }, { text: "👑 Card Roster", callback_data: `char_${targetUserId}` }], 
             [{ text: "🏰 Guild", callback_data: `gld_${targetUserId}` }, { text: "🔄 Main Hub", callback_data: `main_${targetUserId}` }]
           ] 
         }
