@@ -1,10 +1,10 @@
-console.log("💰 ECONOMY ENGINE v2.6 [FULL SLAYER METRICS & SPIN DROPS INTEGRATED]");
+console.log("💰 VELIX OS | DEMON SLAYER ECONOMY ENGINE [UI v2.7 - ONLINE]");
 
 const fs = require("fs");
 const path = require("path");
 const playerFile = path.join(process.cwd(), "data", "players.json");
 
-// Dynamic items allocation pool for spinning rewards mapping
+// Dynamic items allocation base pool from core asset blocks
 const { characters: normalCards } = require("../asset/assets.js");
 const { mythical: mythicCards } = require("../asset/mythical.js");
 
@@ -20,7 +20,7 @@ const saveDB = (data) => {
         const tempPath = playerFile + ".tmp";
         fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), "utf8");
         fs.renameSync(tempPath, playerFile);
-    } catch (e) { console.error("🔥 Economy Write Error:", e); }
+    } catch (e) { console.error("🔥 Corps Write Failure:", e); }
 };
 
 module.exports = (bot) => {
@@ -32,11 +32,10 @@ module.exports = (bot) => {
                 coins: 500, crystals: 0, mythic: 0, exp: 0, level: 1, 
                 last_daily: "", active_task: null,
                 inventory: [],
-                materials: [] // 🧪 Wisteria Serum & ⚔️ Nichirin Ore storage grid matrix
+                materials: [] 
             };
             saveDB(db);
         } else {
-            // Hot-patch layer for old accounts initialization parameters
             if (!db[userId].materials) db[userId].materials = [];
             if (!db[userId].inventory) db[userId].inventory = [];
         }
@@ -45,27 +44,45 @@ module.exports = (bot) => {
 
     const assignTask = (user) => {
         const pool = [
-            { id: "hunt", desc: "Hunt 5 demons", target: 5 },
-            { id: "battle", desc: "Play 10 battles", target: 10 },
-            { id: "work", desc: "Work 5 times", target: 5 }
+            { id: "hunt", desc: "Hunt 5 demons in the woods", target: 5 },
+            { id: "battle", desc: "Engage in 10 training battles", target: 10 },
+            { id: "work", desc: "Help Butterfly Mansion 5 times", target: 5 }
         ];
         const t = pool[Math.floor(Math.random() * pool.length)];
         user.active_task = { ...t, progress: 0, completed: false };
     };
 
     // ==========================================
-    // 1. BALANCE & PROFILE
+    // 💮 1. /balance & /bal (SLAYER CORPS PROFILE)
     // ==========================================
     bot.onText(/\/(?:balance|bal)/, (msg) => {
         const userId = msg.from.id.toString();
         let db = ensureUser(userId);
         let p = db[userId];
-        const text = `💠 **VELIX OS | SLAYER CORPS PROFILE** 💠\n━━━━━━━━━━━━━━━━━━━━\n💰 **Coins:** \`${Number(p.coins).toLocaleString()}\`\n💎 **Crystals:** \`${Number(p.crystals).toLocaleString()}\`\n✨ **Mythic Tokens:** \`${Number(p.mythic).toLocaleString()}\`\n📊 **Slayer Level:** ${p.level} (XP: ${p.exp})\n📦 **Vault Materials:** \`${p.materials.length}\` items (\`/essence\` or \`/blessing\` to check)\n━━━━━━━━━━━━━━━━━━━━`;
+
+        const totalSerums = p.materials.filter(m => m.endsWith('_essence')).length;
+        const totalOres = p.materials.filter(m => m.endsWith('_blessing')).length;
+
+        const text = `💮 **SLAYER REGISTER | CORPS PASSPORT** 💮\n` +
+                     `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                     `👤 **User ID:** \`${userId}\`\n` +
+                     `📊 **Slayer Rank:** \`Level ${p.level}\` *(XP: ${p.exp})*\n` +
+                     `━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+                     `💰 **FINANCIAL LEDGER:**\n` +
+                     `🪙 **Crow Coins:** \`${Number(p.coins).toLocaleString()}\`\n` +
+                     `💎 **Nichirin Crystals:** \`${Number(p.crystals).toLocaleString()}\`\n` +
+                     `✨ **Mythic Essence:** \`${Number(p.mythic).toLocaleString()}\`\n\n` +
+                     `📦 **VAULT INVENTORY:**\n` +
+                     `🧪 **Wisteria Serums:** \`${totalSerums}\` units\n` +
+                     `⚔️ **Nichirin Ores:** \`${totalOres}\` pieces\n\n` +
+                     `📖 *Check items:* \`/essence <name>\` or \`/blessing <name>\`\n` +
+                     `━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
         bot.sendMessage(msg.chat.id, text, { parse_mode: "Markdown" });
     });
 
     // ==========================================
-    // 2. TASK SYSTEM
+    // 🦅 2. /task (KASUGAI CROW DIRECTIVE)
     // ==========================================
     bot.onText(/\/task/, (msg) => {
         const userId = msg.from.id.toString();
@@ -80,13 +97,22 @@ module.exports = (bot) => {
         }
 
         const t = p.active_task;
-        const status = t.completed ? "✅ COMPLETED" : "⏳ PENDING";
-        const text = `📋 **DAILY MISSION**\n\nTask: ${t.desc}\nStatus: ${status}\nProgress: [${t.progress}/${t.target}]\n\nReward: 20 Mythic + 50 XP`;
+        const status = t.completed ? "🟢 SUCCESS (Claimed)" : "🚨 ACTIVE (In Progress)";
+        const text = `🦅 **KASUGAI CROW | DAILY DIRECTIVE** 🦅\n` +
+                     `*“CAW! New orders from headquarters! CAW!”*\n` +
+                     `━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+                     `📜 **MISSION:** \`${t.desc}\`\n` +
+                     `📡 **STATUS:** ${status}\n` +
+                     `📊 **TRACKING:** \`[ ${t.progress} / ${t.target} ]\`\n\n` +
+                     `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                     `🎁 **COMPLETION REWARDS:**\n` +
+                     `✨ \`+20 Mythic Tokens\` | 📈 \`+50 Training XP\``;
+
         bot.sendMessage(msg.chat.id, text, { parse_mode: "Markdown" });
     });
 
     // ==========================================
-    // 3. CONVERTER (FIXED & SECURED)
+    // 🔄 3. /convert (CURRENCY EXCHANGER)
     // ==========================================
     bot.onText(/\/convert (.+) (.+)/, (msg, match) => {
         const userId = msg.from.id.toString();
@@ -95,29 +121,29 @@ module.exports = (bot) => {
         const amount = parseInt(match[2], 10);
 
         if (isNaN(amount) || amount <= 0) {
-            return bot.sendMessage(msg.chat.id, "❌ **Error:** Please provide a valid positive number for conversion.");
+            return bot.sendMessage(msg.chat.id, "❌ **Forger Error:** Invalid trade value params.");
         }
 
         if (type === "c2cr") { 
             const cost = amount * 100;
-            if (db[userId].coins < cost) return bot.sendMessage(msg.chat.id, `❌ Not enough coins. Need 🪙 ${cost.toLocaleString()}`);
+            if (db[userId].coins < cost) return bot.sendMessage(msg.chat.id, `❌ Not enough Crow Coins. Need 🪙 ${cost.toLocaleString()}`);
             db[userId].coins -= cost;
             db[userId].crystals += amount;
-            bot.sendMessage(msg.chat.id, `🔄 **Conversion Success!**\nConverted \`${cost.toLocaleString()} Coins\` to \`${amount.toLocaleString()} Crystals\`!`);
+            bot.sendMessage(msg.chat.id, `🔄 **TRADE SUCCESSFUL** 🔄\n━━━━━━━━━━━━━━━━━━━━\nSpent: 🪙 \`${cost.toLocaleString()} Coins\`\nObtained: 💎 \`${amount.toLocaleString()} Nichirin Crystals\`\n━━━━━━━━━━━━━━━━━━━━`);
         } else if (type === "cr2mt") { 
             const cost = amount * 100;
-            if (db[userId].crystals < cost) return bot.sendMessage(msg.chat.id, `❌ Not enough crystals. Need 💎 ${cost.toLocaleString()}`);
+            if (db[userId].crystals < cost) return bot.sendMessage(msg.chat.id, `❌ Not enough Crystals. Need 💎 ${cost.toLocaleString()}`);
             db[userId].crystals -= cost;
             db[userId].mythic += amount;
-            bot.sendMessage(msg.chat.id, `🔄 **Conversion Success!**\nConverted \`${cost.toLocaleString()} Crystals\` to \`${amount.toLocaleString()} Mythic Tokens\`!`);
+            bot.sendMessage(msg.chat.id, `🔄 **TRADE SUCCESSFUL** 🔄\n━━━━━━━━━━━━━━━━━━━━\nSpent: 💎 \`${cost.toLocaleString()} Crystals\`\nObtained: ✨ \`${amount.toLocaleString()} Mythic Tokens\`\n━━━━━━━━━━━━━━━━━━━━`);
         } else {
-            bot.sendMessage(msg.chat.id, "❌ **Invalid Type!** Use \`c2cr\` (Coins to Crystals) or \`cr2mt\` (Crystals to Tokens).");
+            bot.sendMessage(msg.chat.id, "❌ **Invalid Trade Route!** Use \`c2cr\` (Coins to Crystals) or \`cr2mt\` (Crystals to Tokens).");
         }
         saveDB(db);
     });
 
     // ==========================================
-    // 4. SPIN (SLAYER LUCKY SLOTS DROP MECHANICS)
+    // 🏮 4. /spin (NICHIRIN FORGE SLOTS)
     // ==========================================
     bot.onText(/\/spin/, async (msg) => {
         const chatId = msg.chat.id;
@@ -131,22 +157,22 @@ module.exports = (bot) => {
 
         if (p.coins >= COIN_COST) {
             p.coins -= COIN_COST;
-            paymentMethod = `🪙 -${COIN_COST} Coins`;
+            paymentMethod = `🪙 -${COIN_COST} Crow Coins`;
         } else if (p.mythic >= TOKEN_COST) {
             p.mythic -= TOKEN_COST;
-            paymentMethod = `✨ -${TOKEN_COST} Tokens`;
+            paymentMethod = `✨ -${TOKEN_COST} Mythic Tokens`;
         } else {
-            return bot.sendMessage(chatId, `❌ **Insufficient Funds!**\n\nNeed 🪙 ${COIN_COST} Coins or ✨ ${TOKEN_COST} Mythic Tokens to spin!`, { parse_mode: "Markdown" });
+            return bot.sendMessage(chatId, `❌ **Forge Frozen!**\n\nNeed 🪙 ${COIN_COST} Coins or ✨ ${TOKEN_COST} Tokens to trigger bellows!`, { parse_mode: "Markdown" });
         }
 
         saveDB(db);
 
-        const rollingMsg = await bot.sendMessage(chatId, `🎰 **CORPS SLOTS ARCHITECTURE**\n━━━━━━━━━━━━━━━━━━━━\n🔄 [ 🟦 | 🟦 | 🟦 ] **Rerolling arrays...**\n━━━━━━━━━━━━━━━━━━━━\n🎟️ \`Fee:\` ${paymentMethod}`);
+        const rollingMsg = await bot.sendMessage(chatId, `🎰 **🎰 NICHIRIN FORGE SLOTS 🎰**\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔄 [ 🟦 | 🟦 | 🟦 ] *Bellows expanding...*\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n🎟️ \`Fee:\` ${paymentMethod}`);
 
         const matrixFrames = [
-            `🎰 **CORPS SLOTS ARCHITECTURE**\n━━━━━━━━━━━━━━━━━━━━\n🔄 [ 🧪 | ⚔️ | 🪙 ] *Sifting supply files...*\n━━━━━━━━━━━━━━━━━━━━\n🎟️ \`Fee:\` ${paymentMethod}`,
-            `🎰 **CORPS SLOTS ARCHITECTURE**\n━━━━━━━━━━━━━━━━━━━━\n🔄 [ 💎 | 💎 | 🧪 ] *Calibrating drop matrix...*\n━━━━━━━━━━━━━━━━━━━━\n🎟️ \`Fee:\` ${paymentMethod}`,
-            `🎰 **CORPS SLOTS ARCHITECTURE**\n━━━━━━━━━━━━━━━━━━━━\n🔄 [ ⚔️ | 👑 | 💎 ] *Assembling components...*\n━━━━━━━━━━━━━━━━━━━━\n🎟️ \`Fee:\` ${paymentMethod}`
+            `🎰 **🎰 NICHIRIN FORGE SLOTS 🎰**\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔄 [ 🧪 | ⚔️ | 🪙 ] *Heating steels...*\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n🎟️ \`Fee:\` ${paymentMethod}`,
+            `🎰 **🎰 NICHIRIN FORGE SLOTS 🎰**\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔄 [ 💎 | 💎 | 🧪 ] *Sparks cascading...*\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n🎟️ \`Fee:\` ${paymentMethod}`,
+            `🎰 **🎰 NICHIRIN FORGE SLOTS 🎰**\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔄 [ ⚔️ | 👑 | 💎 ] *Tempering sword cores...*\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n🎟️ \`Fee:\` ${paymentMethod}`
         ];
 
         for (let i = 0; i < matrixFrames.length; i++) {
@@ -164,68 +190,68 @@ module.exports = (bot) => {
         let rewardText = "";
 
         if (rollValue < 2) { 
-            // 2% Mythic Jackpot: 25 Tokens
             const amt = 25;
             p.mythic = Number(p.mythic || 0) + amt;
             slotDisplay = "👑 | 👑 | 👑";
             rewardTitle = "✨ MYTHICAL JACKPOT EXTRACTION ✨";
-            rewardText = `🎉 You won **${amt} Mythic Tokens**!`;
+            rewardText = `🎉 Absolute Fortune! Salvaged **${amt} Mythic Tokens** directly from the inner forge channel!`;
         } 
         else if (rollValue < 12) { 
-            // 10% Crystal Matrix Drop: 12 Crystals
             const amt = 12;
             p.crystals = Number(p.crystals || 0) + amt;
             slotDisplay = "💎 | 💎 | 💎";
             rewardTitle = "💎 CRYSTAL MATRIX DROP 💎";
-            rewardText = `🎁 You won **${amt} Crystals**!`;
+            rewardText = `🎁 Sparking raw matrices! Handed over **${amt} Nichirin Crystals** to your pack.`;
         } 
         else if (rollValue < 40) { 
-            // 28% Big Coins Return: 3,000 Coins
             const amt = 3000;
             p.coins += amt;
             slotDisplay = "🪙 | 🪙 | 🧪";
             rewardTitle = "🪙 MASSIVE COINS RETURN 🪙";
-            rewardText = `💵 You won **${amt.toLocaleString()} Coins**!`;
+            rewardText = `💵 The merchant syndicate re-route! Recovered **${amt.toLocaleString()} Crow Coins**.`;
         } 
         else if (rollValue < 75) { 
-            // 35% DEMON SLAYER SPECIFIC REWARD MATRIX GENERATION
             const normalKeys = Object.keys(normalCards || {});
             const mythicKeys = Object.keys(mythicCards || {});
             const combinedKeys = [...new Set([...normalKeys, ...mythicKeys])];
             const randomChar = combinedKeys[Math.floor(Math.random() * combinedKeys.length)] || "tanjiro";
 
             if (Math.random() < 0.6) {
-                // 60% of inventory drops -> Wisteria Serum (Level item)
                 const rType = Math.random() < 0.25 ? "mythic" : "normal";
                 const itemId = `${randomChar}_${rType}_essence`;
                 p.materials.push(itemId);
                 
                 slotDisplay = "🧪 | 🧪 | 📦";
-                rewardTitle = "🧪 VAULT DROPS: WISTERIA SERUM 🧪";
-                rewardText = `📦 Crafted specific **${randomChar.toUpperCase()} [${rType.toUpperCase()}] Wisteria Serum**! Added directly to materials block stack register. Check with \`/essence ${randomChar}\`.`;
+                rewardTitle = "🧪 INVENTORY: WISTERIA FLUIDS 🧪";
+                rewardText = `Extracted custom **${randomChar.toUpperCase()} [${rType.toUpperCase()}] Wisteria Serum**! Ready for cell cultivation via \`/essence ${randomChar}\`.`;
             } else {
-                // 40% of inventory drops -> Nichirin Ore (Awakening item)
                 const rType = Math.random() < 0.25 ? "mythic" : "normal";
                 const itemId = `${randomChar}_${rType}_blessing`;
                 p.materials.push(itemId);
 
                 slotDisplay = "⚔️ | ⚔️ | 📦";
-                rewardTitle = "⚔️ SMITHY DROPS: NICHIRIN ORE ⚔️";
-                rewardText = `📦 Salvaged specific **${randomChar.toUpperCase()} [${rType.toUpperCase()}] Nichirin Ore**! Added to blacksmith storage block queue. Check with \`/blessing ${randomChar}\`.`;
+                rewardTitle = "⚔️ FORGE: UNBOUND NICHIRIN ORE ⚔️";
+                rewardText = `Hammered out a matching **${randomChar.toUpperCase()} [${rType.toUpperCase()}] Nichirin Ore** piece! Store block locked. Forge via \`/blessing ${randomChar}\`.`;
             }
         }
         else { 
             slotDisplay = "💀 | ❌ | 🪵";
-            rewardTitle = "💥 STRUCTURAL DEAD DROP 💥";
-            rewardText = "Better luck next time! The breathing forms lapsed and arrays dropped empty values.";
+            rewardTitle = "💥 METALLIC COLLAPSE 💥";
+            rewardText = "Slag carbon content too high! Bellows dropped cold ash parameters.";
         }
 
         saveDB(db);
 
-        let finalLayout = `🎰 **CORPS SLOTS ARCHITECTURE**\n━━━━━━━━━━━━━━━━━━━━\n✨ [ ${slotDisplay} ] ✨\n━━━━━━━━━━━━━━━━━━━━\n\n` +
-                          `⚡ **${rewardTitle}**\n\n${rewardText}\n\n` +
-                          `📊 **Updated Vault Ledger:**\n` +
-                          `• 🪙 Balance: \`${p.coins.toLocaleString()}\`\n` +
+        let finalLayout = `🎰 **🎰 NICHIRIN FORGE SLOTS 🎰**\n` +
+                          `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                          `🏮 [  ${slotDisplay}  ] 🏮\n` +
+                          `━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+                          `🔥 **🔴 FORGE REACTION:**\n` +
+                          `⚔️ **${rewardTitle}**\n` +
+                          `📝 *${rewardText}*\n\n` +
+                          `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                          `🏦 **UPDATED SACK STORAGE:**\n` +
+                          `• 🪙 Coins: \`${p.coins.toLocaleString()}\`\n` +
                           `• 💎 Crystals: \`${Number(p.crystals).toLocaleString()}\`\n` +
                           `• ✨ Tokens: \`${Number(p.mythic).toLocaleString()}\``;
 
@@ -237,7 +263,7 @@ module.exports = (bot) => {
     });
 
     // ==========================================
-    // 5. WORK (WITH TASK INTEGRATION)
+    // 💼 5. /work (TRAINING PATROL & CROW REWARD)
     // ==========================================
     bot.onText(/\/work/, (msg) => {
         const userId = msg.from.id.toString();
@@ -252,11 +278,11 @@ module.exports = (bot) => {
             if (p.active_task.progress >= p.active_task.target) {
                 p.active_task.completed = true;
                 p.mythic += 20; p.exp += 50;
-                bot.sendMessage(msg.chat.id, "🎉 Task Completed! +20 Mythic Tokens & +50 XP!");
+                bot.sendMessage(msg.chat.id, "🦅 *“CAW! Mission Complete!”* — Added \`+20 Mythic Tokens\` & \`+50 Training XP\`!");
             }
         }
         
         saveDB(db);
-        bot.sendMessage(msg.chat.id, `💼 Worked! Earned ${earnings} coins.`);
+        bot.sendMessage(msg.chat.id, `💼 **Patrol Complete!** Helped the village and earned \`${earnings} Crow Coins\`.`);
     });
 };
