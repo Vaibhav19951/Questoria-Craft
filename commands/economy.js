@@ -1,4 +1,4 @@
-console.log("💰 VELIX OS | DEMON SLAYER ECONOMY ENGINE [UI v2.8 - ONLINE]");
+console.log("💰 VELIX OS | DEMON SLAYER ECONOMY ENGINE [UI v3.0 - ANTI-NAN RECOVERY]");
 
 const fs = require("fs");
 const path = require("path");
@@ -10,7 +10,8 @@ const { mythical: mythicCards } = require("../asset/mythical.js");
 const getDB = () => {
     try {
         if (!fs.existsSync(playerFile)) return {};
-        return JSON.parse(fs.readFileSync(playerFile, "utf8"));
+        const raw = fs.readFileSync(playerFile, "utf8");
+        return raw ? JSON.parse(raw) : {};
     } catch (e) { return {}; }
 };
 
@@ -24,20 +25,28 @@ const saveDB = (data) => {
 
 module.exports = (bot) => {
 
+    // Anti-NaN & Null Validation Pipeline
+    const sanitizeUserObject = (user) => {
+        if (!user) user = {};
+        
+        user.coins = isNaN(parseInt(user.coins)) ? 500 : parseInt(user.coins);
+        user.crystals = isNaN(parseInt(user.crystals)) ? 0 : parseInt(user.crystals);
+        user.mythic = isNaN(parseInt(user.mythic)) ? 0 : parseInt(user.mythic);
+        user.exp = isNaN(parseInt(user.exp)) ? 0 : parseInt(user.exp);
+        user.level = isNaN(parseInt(user.level)) || parseInt(user.level) <= 0 ? 1 : parseInt(user.level);
+        
+        if (!user.last_daily) user.last_daily = "";
+        if (!user.active_task) user.active_task = null;
+        if (!user.inventory || !Array.isArray(user.inventory)) user.inventory = [];
+        if (!user.materials || Array.isArray(user.materials) || typeof user.materials !== "object") user.materials = {};
+        
+        return user;
+    };
+
     const ensureUser = (userId) => {
         let db = getDB();
-        if (!db[userId]) {
-            db[userId] = { 
-                coins: 500, crystals: 0, mythic: 0, exp: 0, level: 1, 
-                last_daily: "", active_task: null,
-                inventory: [],
-                materials: {} 
-            };
-            saveDB(db);
-        } else {
-            if (!db[userId].materials || Array.isArray(db[userId].materials)) db[userId].materials = {};
-            if (!db[userId].inventory) db[userId].inventory = [];
-        }
+        db[userId] = sanitizeUserObject(db[userId]);
+        saveDB(db);
         return db;
     };
 
@@ -60,10 +69,14 @@ module.exports = (bot) => {
         let p = db[userId];
 
         let totalSerums = 0;
-        let totalOres = p.materials["universal_blessing"] || 0;
+        let totalOres = parseInt(p.materials["universal_blessing"]) || 0;
+        if (isNaN(totalOres)) totalOres = 0;
         
         Object.keys(p.materials).forEach(key => {
-            if (key.endsWith('_essence')) totalSerums += p.materials[key];
+            if (key.endsWith('_essence')) {
+                let amt = parseInt(p.materials[key]) || 0;
+                totalSerums += isNaN(amt) ? 0 : amt;
+            }
         });
 
         const text = `💮 **SLAYER REGISTER | CORPS PASSPORT** 💮\n` +
@@ -72,9 +85,9 @@ module.exports = (bot) => {
                      `📊 **Slayer Rank:** \`Level ${p.level}\` *(XP: ${p.exp})*\n` +
                      `━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
                      `💰 **FINANCIAL LEDGER:**\n` +
-                     `🪙 **Crow Coins:** \`${Number(p.coins).toLocaleString()}\`\n` +
-                     `💎 **Nichirin Crystals:** \`${Number(p.crystals).toLocaleString()}\`\n` +
-                     `✨ **Mythic Tokens:** \`${Number(p.mythic).toLocaleString()}\`\n\n` +
+                     `🪙 **Crow Coins:** \`${p.coins.toLocaleString()}\`\n` +
+                     `💎 **Nichirin Crystals:** \`${p.crystals.toLocaleString()}\`\n` +
+                     `✨ **Mythic Tokens:** \`${p.mythic.toLocaleString()}\`\n\n` +
                      `📦 **VAULT INVENTORY:**\n` +
                      `🧪 **Specific Essences:** \`${totalSerums}\` units\n` +
                      `⚔️ **Universal Blessings:** \`${totalOres}\` / 3 pieces\n\n` +
@@ -120,6 +133,7 @@ module.exports = (bot) => {
     bot.onText(/\/convert (.+) (.+)/, (msg, match) => {
         const userId = msg.from.id.toString();
         let db = ensureUser(userId);
+        let p = db[userId];
         const type = match[1].toLowerCase();
         const amount = parseInt(match[2], 10);
 
@@ -129,18 +143,18 @@ module.exports = (bot) => {
 
         if (type === "c2cr") { 
             const cost = amount * 100;
-            if (db[userId].coins < cost) return bot.sendMessage(msg.chat.id, `❌ Not enough Crow Coins. Need 🪙 ${cost.toLocaleString()}`);
-            db[userId].coins -= cost;
-            db[userId].crystals += amount;
+            if (p.coins < cost) return bot.sendMessage(msg.chat.id, `❌ Not enough Crow Coins. Need 🪙 ${cost.toLocaleString()}`);
+            p.coins -= cost;
+            p.crystals += amount;
             bot.sendMessage(msg.chat.id, `🔄 **TRADE SUCCESSFUL** 🔄\n━━━━━━━━━━━━━━━━━━━━\nSpent: 🪙 \`${cost.toLocaleString()} Coins\`\nObtained: 💎 \`${amount.toLocaleString()} Nichirin Crystals\`\n━━━━━━━━━━━━━━━━━━━━`);
         } else if (type === "cr2mt") { 
             const cost = amount * 100;
-            if (db[userId].crystals < cost) return bot.sendMessage(msg.chat.id, `❌ Not enough Crystals. Need 💎 ${cost.toLocaleString()}`);
-            db[userId].crystals -= cost;
-            db[userId].mythic += amount;
+            if (p.crystals < cost) return bot.sendMessage(msg.chat.id, `❌ Not enough Crystals. Need 💎 ${cost.toLocaleString()}`);
+            p.crystals -= cost;
+            p.mythic += amount;
             bot.sendMessage(msg.chat.id, `🔄 **TRADE SUCCESSFUL** 🔄\n━━━━━━━━━━━━━━━━━━━━\nSpent: 💎 \`${cost.toLocaleString()} Crystals\`\nObtained: ✨ \`${amount.toLocaleString()} Mythic Tokens\`\n━━━━━━━━━━━━━━━━━━━━`);
         } else {
-            bot.sendMessage(msg.chat.id, "❌ **Invalid Trade Route!** Use \`c2cr\` (Coins to Crystals) or \`cr2mt\` (Crystals to Tokens).");
+            return bot.sendMessage(msg.chat.id, "❌ **Invalid Trade Route!** Use \`c2cr\` (Coins to Crystals) or \`cr2mt\` (Crystals to Tokens).");
         }
         saveDB(db);
     });
@@ -151,7 +165,9 @@ module.exports = (bot) => {
     bot.onText(/\/spin\s*(\w*)\s*(\d*)/, async (msg, match) => {
         const chatId = msg.chat.id;
         const userId = msg.from.id.toString();
-        let db = ensureUser(userId);
+        
+        let db = getDB();
+        db[userId] = sanitizeUserObject(db[userId]);
         let p = db[userId];
 
         const mode = match[1] ? match[1].toLowerCase() : "normal";
@@ -162,13 +178,12 @@ module.exports = (bot) => {
         let currencyKey = "";
         let assetSymbol = "";
 
-        // Core Matrix Config Routing
         if (mode === "normal") {
             currencyKey = "coins";
             assetSymbol = "🪙";
             if (count === 1) cost = 25;
             else if (count === 5) cost = 250;
-            else if (count === 10) { cost = 500; rolls = 11; } // +1 FREE SPIN
+            else if (count === 10) { cost = 500; rolls = 11; } 
             else if (count === 50) cost = 2500;
             else return bot.sendMessage(chatId, "❌ **Invalid Multi-Spin count!** Options: 1, 5, 10, 50.");
         } 
@@ -184,7 +199,7 @@ module.exports = (bot) => {
             assetSymbol = "💎";
             if (count === 1) cost = 50;
             else if (count === 5) cost = 250;
-            else if (count === 10) { cost = 500; rolls = 11; } // +1 FREE SPIN
+            else if (count === 10) { cost = 500; rolls = 11; } 
             else if (count === 50) cost = 2500;
             else return bot.sendMessage(chatId, "❌ **Invalid Material compilation parameters!** Options: 1, 5, 10, 50.");
         } else {
@@ -195,16 +210,10 @@ module.exports = (bot) => {
             return bot.sendMessage(chatId, `❌ **Sack Depleted!** Need ${assetSymbol} \`${cost.toLocaleString()}\` for this operation.`);
         }
 
-        p[currencyKey] -= cost;
-        saveDB(db);
-
-        const processingMsg = await bot.sendMessage(chatId, `🎰 **NICHIRIN FORGE SLOTS | MODE: ${mode.toUpperCase()}**\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔄 Bellows roaring, preparing processing vectors...\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n🎟️ \`Deducted:\` ${assetSymbol} ${cost.toLocaleString()}`);
-
         let lootEarned = [];
         const normalNames = Array.isArray(normalCards) ? normalCards.map(c => c.name) : Object.keys(normalCards || {});
         const mythicObjects = Array.isArray(mythicCards) ? mythicCards : [];
 
-        // Operational Processing Loop Block
         for (let i = 0; i < rolls; i++) {
             if (mode === "normal") {
                 if (Math.random() < 0.70) {
@@ -213,15 +222,13 @@ module.exports = (bot) => {
                     lootEarned.push(`🃏 Card: ${randomNorm}`);
                 } else {
                     const bonusCoins = Math.floor(Math.random() * 80) + 20;
-                    p.coins += bonusCoins;
+                    p.coins = (parseInt(p.coins) || 0) + bonusCoins;
                     lootEarned.push(`🪙 Bonus: +${bonusCoins} Coins`);
                 }
             } 
             else if (mode === "character") {
                 const randChance = Math.random() * 100;
-                // High power character drop rates are heavily dampened (Ultra Low)
                 if (randChance < 3.0 && mythicObjects.length > 0) { 
-                    // Muzan / High Premium Tier (Top Index Asset)
                     const muzan = mythicObjects.find(c => c.id.includes("muzan")) || mythicObjects[mythicObjects.length - 1];
                     p.inventory.push(muzan.name);
                     lootEarned.push(`🔥 [MYTHICAL ULTIMATE] ${muzan.name}`);
@@ -237,27 +244,33 @@ module.exports = (bot) => {
             } 
             else if (mode === "material") {
                 if (Math.random() < 0.15) {
-                    p.materials["universal_blessing"] = (p.materials["universal_blessing"] || 0) + 1;
+                    let curBless = parseInt(p.materials["universal_blessing"]) || 0;
+                    p.materials["universal_blessing"] = curBless + 1;
                     lootEarned.push("💎 Universal Blessing Ore Piece");
                 } else {
                     const poolSample = mythicObjects.length > 0 ? mythicObjects.map(c => c.id.split('_')[0]) : ["tanjiro", "nezuko", "zenitsu"];
                     const designatedChar = poolSample[Math.floor(Math.random() * poolSample.length)];
                     const generatedEssence = `${designatedChar}_essence`;
                     
-                    p.materials[generatedEssence] = (p.materials[generatedEssence] || 0) + 1;
+                    let curEss = parseInt(p.materials[generatedEssence]) || 0;
+                    p.materials[generatedEssence] = curEss + 1;
                     lootEarned.push(`🧪 Essence: ${generatedEssence.toUpperCase()}`);
                 }
             }
         }
 
+        p[currencyKey] = (parseInt(p[currencyKey]) || 0) - cost;
+        db[userId] = sanitizeUserObject(p); // Re-verification hard lock block before saving
         saveDB(db);
+
+        const processingMsg = await bot.sendMessage(chatId, `🎰 **NICHIRIN FORGE SLOTS | MODE: ${mode.toUpperCase()}**\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔄 Bellows roaring, finalizing matrix configurations...\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n🎟️ \`Deducted:\` ${assetSymbol} ${cost.toLocaleString()}`);
 
         const reportSummary = lootEarned.map(item => `• ${item}`).join('\n');
         let finalOutput = `🎰 **FORGE DROP REPORT | PROCESS COMPLETION**\n` +
                           `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
                           `🎁 **EXTRACTED REWARDS (${rolls}x Processing):**\n${reportSummary}\n` +
                           `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                          `🏦 **REMAINING RESERVES:**\n` +
+                          `BANK STORAGE SAVED STATUS: ✅ SECURE\n` +
                           `• Coins: \`${p.coins.toLocaleString()}\` | Crystals: \`${p.crystals}\` | Tokens: \`${p.mythic}\``;
 
         await bot.editMessageText(finalOutput, {
@@ -276,7 +289,7 @@ module.exports = (bot) => {
         let db = ensureUser(userId);
         const itemRequested = match[1].trim().toLowerCase();
 
-        if (!db[userId].materials[itemRequested] || db[userId].materials[itemRequested] < 1) {
+        if (!db[userId].materials[itemRequested] || parseInt(db[userId].materials[itemRequested]) < 1) {
             return bot.sendMessage(chatId, `❌ **Vault Discrepancy!** You don't possess any units of \`${itemRequested}\` inside storage blueprints.`);
         }
 
@@ -284,9 +297,8 @@ module.exports = (bot) => {
             return bot.sendMessage(chatId, "❌ **Execution Halted:** `/use` pipeline accepts character-specific essences only!");
         }
 
-        const characterReference = itemRequested.split('_')[0]; // Extracted character clean handle
+        const characterReference = itemRequested.split('_')[0]; 
 
-        // Instantiating Dynamic Multi-Option Routing Switch Matrix
         const interfaceOptions = {
             reply_markup: JSON.stringify({
                 inline_keyboard: [
@@ -312,29 +324,30 @@ module.exports = (bot) => {
         const chatId = query.message.chat.id;
 
         let db = getDB();
+        db[userId] = sanitizeUserObject(db[userId]);
         let p = db[userId];
 
-        if (!p || !p.materials[targetEssence] || p.materials[targetEssence] < 1) {
+        let essenceCount = parseInt(p.materials[targetEssence]) || 0;
+        if (essenceCount < 1) {
             return bot.answerCallbackQuery(query.id, { text: "Bhai, item nahi mil raha vault mein!", show_alert: true });
         }
 
-        // Locate appropriate representation match within storage logs
-        let ownedInventoryIndex = p.inventory.findIndex(item => item.toLowerCase().includes(charRef));
+        let ownedInventoryIndex = p.inventory.findIndex(item => {
+            if (typeof item === "string") return item.toLowerCase().includes(charRef);
+            return item.name && item.name.toLowerCase().includes(charRef);
+        });
         
         if (ownedInventoryIndex === -1) {
             return bot.answerCallbackQuery(query.id, { text: `Bhai, pehle ${charRef.toUpperCase()} ka card acquire karo inventory mein!`, show_alert: true });
         }
 
-        // Deduct operational serum item currency
-        p.materials[targetEssence] -= 1;
-        if (p.materials[targetEssence] === 0) delete p.materials[targetEssence];
+        p.materials[targetEssence] = essenceCount - 1;
+        if (p.materials[targetEssence] <= 0) delete p.materials[targetEssence];
 
-        // Core Balance Scaling Configurations Formulation
-        let gainedXp = chosenTier === "mythical" ? 50 : 100; // Premium 5x harder grind matrix dampening
+        let gainedXp = chosenTier === "mythical" ? 50 : 100; 
         let gainedPower = chosenTier === "mythical" ? 150 : 50;
         let boundaryXpCap = chosenTier === "mythical" ? 500 : 100;
 
-        // Custom individual tracking parameter injection checks inside item block properties
         if (typeof p.inventory[ownedInventoryIndex] === "string") {
             p.inventory[ownedInventoryIndex] = {
                 name: p.inventory[ownedInventoryIndex],
@@ -345,6 +358,10 @@ module.exports = (bot) => {
         }
 
         let card = p.inventory[ownedInventoryIndex];
+        card.level = isNaN(parseInt(card.level)) ? 1 : parseInt(card.level);
+        card.xp = isNaN(parseInt(card.xp)) ? 0 : parseInt(card.xp);
+        card.power = isNaN(parseInt(card.power)) ? 1000 : parseInt(card.power);
+
         card.xp += gainedXp;
         card.power += gainedPower;
 
@@ -352,12 +369,13 @@ module.exports = (bot) => {
         if (card.xp >= boundaryXpCap) {
             card.xp -= boundaryXpCap;
             card.level += 1;
-            card.power += chosenTier === "mythical" ? 300 : 75; // Extra Milestone boost values allocation
+            card.power += chosenTier === "mythical" ? 300 : 75; 
             leveledUp = true;
         }
 
+        db[userId] = sanitizeUserObject(p);
         saveDB(db);
-        await bot.answerCallbackQuery(query.id, { text: "Cultivation sequence processed successfully!" });
+        await bot.answerCallbackQuery(query.id, { text: "Cultivation sequence processed and saved safely!" });
 
         let reportMessage = `🧪 **ESSENCE PROCESSING SEQUENCE COMPLETION**\n` +
                             `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
@@ -388,13 +406,14 @@ module.exports = (bot) => {
         let p = db[userId];
         
         const earnings = 200;
-        p.coins += earnings;
+        p.coins = (parseInt(p.coins) || 0) + earnings;
         
         if (p.active_task && p.active_task.id === "work" && !p.active_task.completed) {
-            p.active_task.progress += 1;
+            p.active_task.progress = (parseInt(p.active_task.progress) || 0) + 1;
             if (p.active_task.progress >= p.active_task.target) {
                 p.active_task.completed = true;
-                p.mythic += 20; p.exp += 50;
+                p.mythic = (parseInt(p.mythic) || 0) + 20; 
+                p.exp = (parseInt(p.exp) || 0) + 50;
                 bot.sendMessage(msg.chat.id, "🦅 *“CAW! Mission Complete!”* — Added \`+20 Mythic Tokens\` & \`+50 Training XP\`!");
             }
         }
