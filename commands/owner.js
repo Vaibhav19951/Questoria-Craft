@@ -191,20 +191,34 @@ module.exports = (bot) => {
   // ==========================================
   // 🪙 COINS MODIFICATION COMMANDS
   // ==========================================
-  bot.onText(/\/addcoins (\d+) (\d+)/, (msg, match) => {
+  bot.onText(/\/addcoins (.+)/, (msg, match) => {
     if (!isOwner(msg)) return;
-    const p = getPlayer(match[1]);
-    p.coins += parseInt(match[2], 10);
+    const parts = match[1].trim().split(/\s+/);
+    if (parts.length < 2) return bot.sendMessage(msg.chat.id, "❌ **Syntax:** `/addcoins USER_ID AMOUNT`");
+
+    const targetId = parts[0];
+    const amount = parseInt(parts[1], 10);
+    if (isNaN(amount)) return bot.sendMessage(msg.chat.id, "❌ Invalid amount value.");
+
+    const p = getPlayer(targetId);
+    p.coins += amount;
     saveAll();
-    bot.sendMessage(msg.chat.id, `✅ Added ${parseInt(match[2], 10).toLocaleString()} Coins. New Balance: ${p.coins.toLocaleString()}`);
+    bot.sendMessage(msg.chat.id, `✅ Added ${amount.toLocaleString()} Coins. New Balance: ${p.coins.toLocaleString()}`);
   });
 
-  bot.onText(/\/removecoins (\d+) (\d+)/, (msg, match) => {
+  bot.onText(/\/removecoins (.+)/, (msg, match) => {
     if (!isOwner(msg)) return;
-    const p = getPlayer(match[1]);
-    p.coins = Math.max(0, p.coins - parseInt(match[2], 10));
+    const parts = match[1].trim().split(/\s+/);
+    if (parts.length < 2) return bot.sendMessage(msg.chat.id, "❌ **Syntax:** `/removecoins USER_ID AMOUNT`");
+
+    const targetId = parts[0];
+    const amount = parseInt(parts[1], 10);
+    if (isNaN(amount)) return bot.sendMessage(msg.chat.id, "❌ Invalid amount value.");
+
+    const p = getPlayer(targetId);
+    p.coins = Math.max(0, p.coins - amount);
     saveAll();
-    bot.sendMessage(msg.chat.id, `🔻 Removed ${parseInt(match[2], 10).toLocaleString()} Coins. New Balance: ${p.coins.toLocaleString()}`);
+    bot.sendMessage(msg.chat.id, `🔻 Removed ${amount.toLocaleString()} Coins. New Balance: ${p.coins.toLocaleString()}`);
   });
 
   bot.onText(/\/resetcoins/, async (msg) => {
@@ -218,48 +232,81 @@ module.exports = (bot) => {
   // ==========================================
   // 💎 CRYSTALS MODIFICATION COMMANDS
   // ==========================================
-  bot.onText(/\/addcrystals (\d+) (\d+)/, (msg, match) => {
+  bot.onText(/\/addcrystals (.+)/, (msg, match) => {
     if (!isOwner(msg)) return;
-    const p = getPlayer(match[1]);
-    p.crystals = Number(p.crystals || 0) + parseInt(match[2], 10);
+    const parts = match[1].trim().split(/\s+/);
+    if (parts.length < 2) return bot.sendMessage(msg.chat.id, "❌ **Syntax:** `/addcrystals USER_ID AMOUNT`");
+
+    const targetId = parts[0];
+    const amount = parseInt(parts[1], 10);
+    if (isNaN(amount)) return bot.sendMessage(msg.chat.id, "❌ Invalid amount value.");
+
+    const p = getPlayer(targetId);
+    p.crystals = Number(p.crystals || 0) + amount;
     saveAll();
-    bot.sendMessage(msg.chat.id, `💎 **Added:** \`+${parseInt(match[2], 10).toLocaleString()} Crystals\`\n📊 **Balance:** \`${p.crystals.toLocaleString()} Crystals\``, { parse_mode: "Markdown" });
+    bot.sendMessage(msg.chat.id, `💎 **Added:** \`+${amount.toLocaleString()} Crystals\`\n📊 **Balance:** \`${p.crystals.toLocaleString()} Crystals\``, { parse_mode: "Markdown" });
   });
 
-  bot.onText(/\/removecrystals (\d+) (\d+)/, (msg, match) => {
+  bot.onText(/\/removecrystals (.+)/, (msg, match) => {
     if (!isOwner(msg)) return;
-    const p = getPlayer(match[1]);
-    p.crystals = Math.max(0, Number(p.crystals || 0) - parseInt(match[2], 10));
+    const parts = match[1].trim().split(/\s+/);
+    if (parts.length < 2) return bot.sendMessage(msg.chat.id, "❌ **Syntax:** `/removecrystals USER_ID AMOUNT`");
+
+    const targetId = parts[0];
+    const amount = parseInt(parts[1], 10);
+    if (isNaN(amount)) return bot.sendMessage(msg.chat.id, "❌ Invalid amount value.");
+
+    const p = getPlayer(targetId);
+    p.crystals = Math.max(0, Number(p.crystals || 0) - amount);
     saveAll();
-    bot.sendMessage(msg.chat.id, `🛡 **Removed:** \`-${parseInt(match[2], 10).toLocaleString()} Crystals\`\n📊 **Balance:** \`${p.crystals.toLocaleString()} Crystals\``, { parse_mode: "Markdown" });
+    bot.sendMessage(msg.chat.id, `🛡 **Removed:** \`-${amount.toLocaleString()} Crystals\`\n📊 **Balance:** \`${p.crystals.toLocaleString()} Crystals\``, { parse_mode: "Markdown" });
   });
 
   // ==========================================
   // ✨ MYTHICAL TOKENS MODIFICATION COMMANDS
   // ==========================================
-  bot.onText(/\/addtokens (\d+) (\d+)/, (msg, match) => {
+  bot.onText(/\/addtokens (.+)/, (msg, match) => {
     if (!isOwner(msg)) return;
-    const p = getPlayer(match[1]);
-    p.mythic = Number(p.mythic || 0) + parseInt(match[2], 10);
+    const parts = match[1].trim().split(/\s+/);
+    if (parts.length < 2) return bot.sendMessage(msg.chat.id, "❌ **Syntax:** `/addtokens USER_ID AMOUNT`");
+
+    const targetId = parts[0];
+    const amount = parseInt(parts[1], 10);
+    if (isNaN(amount)) return bot.sendMessage(msg.chat.id, "❌ Invalid amount value.");
+
+    const p = getPlayer(targetId);
+    p.mythic = Number(p.mythic || 0) + amount;
     saveAll();
-    bot.sendMessage(msg.chat.id, `✨ **Added:** \`+${parseInt(match[2], 10).toLocaleString()} Mythical Tokens\`\n📊 **Balance:** \`${p.mythic.toLocaleString()} Mythic Tokens\``, { parse_mode: "Markdown" });
+    bot.sendMessage(msg.chat.id, `✨ **Added:** \`+${amount.toLocaleString()} Mythical Tokens\`\n📊 **Balance:** \`${p.mythic.toLocaleString()} Mythic Tokens\``, { parse_mode: "Markdown" });
   });
 
-  bot.onText(/\/removetokens (\d+) (\d+)/, (msg, match) => {
+  bot.onText(/\/removetokens (.+)/, (msg, match) => {
     if (!isOwner(msg)) return;
-    const p = getPlayer(match[1]);
-    p.mythic = Math.max(0, Number(p.mythic || 0) - parseInt(match[2], 10));
+    const parts = match[1].trim().split(/\s+/);
+    if (parts.length < 2) return bot.sendMessage(msg.chat.id, "❌ **Syntax:** `/removetokens USER_ID AMOUNT`");
+
+    const targetId = parts[0];
+    const amount = parseInt(parts[1], 10);
+    if (isNaN(amount)) return bot.sendMessage(msg.chat.id, "❌ Invalid amount value.");
+
+    const p = getPlayer(targetId);
+    p.mythic = Math.max(0, Number(p.mythic || 0) - amount);
     saveAll();
-    bot.sendMessage(msg.chat.id, `🛡 **Removed:** \`-${parseInt(match[2], 10).toLocaleString()} Mythical Tokens\`\n📊 **Balance:** \`${p.mythic.toLocaleString()} Mythic Tokens\``, { parse_mode: "Markdown" });
+    bot.sendMessage(msg.chat.id, `🛡 **Removed:** \`-${amount.toLocaleString()} Mythical Tokens\`\n📊 **Balance:** \`${p.mythic.toLocaleString()} Mythic Tokens\``, { parse_mode: "Markdown" });
   });
 
   // ==========================================
   // 📦 INVENTORY & UTILITIES
   // ==========================================
-  bot.onText(/\/removecharacter (\d+) (.+)/, (msg, match) => {
+  bot.onText(/\/removecharacter (.+)/, (msg, match) => {
     if (!isOwner(msg)) return;
-    const p = getPlayer(match[1]);
-    const targetCharId = match[2].trim();
+    const parts = match[1].trim().split(/\s+/);
+    if (parts.length < 2) return bot.sendMessage(msg.chat.id, "❌ **Syntax:** `/removecharacter USER_ID CHARACTER_ID`");
+
+    const targetId = parts[0];
+    const targetCharId = parts[1].trim();
+
+    const p = getPlayer(targetId);
     p.inventory = p.inventory.filter(item => !item.startsWith(targetCharId + "|"));
     saveAll();
     bot.sendMessage(msg.chat.id, "🗑️ Character removed from inventory.");
