@@ -1,12 +1,13 @@
 /**
  * VELIX OS V2.5 | SECURE PREMIUM GATEWAY & MANUAL VALIDATION LEDGER
- * Fully Integrated with godtier.js Core Registry & Local Asset QR Stream
+ * Fully Integrated with godchar.js Core Registry & Local Asset QR Stream
  * Thread-Safe Data Mutation Protocol with Perimeter Isolated Callback Guards
  */
 
 const fs = require('fs');
 const path = require('path');
-const godTierRegistry = require("./asset/godtier");
+// ✅ FIXED: Name updated to godchar and relative path adjusted for commands/ directory
+const godTierRegistry = require("../asset/godchar");
 const godCharManifest = godTierRegistry.godTierManifest || {};
 
 console.log("💎 [LOADED SUCCESS] Secure Premium Transaction Gateway Synced: premium.js");
@@ -31,8 +32,8 @@ module.exports = (bot) => {
     universal_awakening_stone: { name: "Universal Awakening Catalyst Stone x1", price: "₹99", type: "universal" }
   };
 
-  // 📂 Static Reference to the asset folder QR code image
-  const LOCAL_QR_PATH = path.join(__dirname, 'asset', 'qr.jpg'); 
+  // 📂 FIXED: Points dynamically out of commands/ and goes into asset/qr.jpg
+  const LOCAL_QR_PATH = path.join(__dirname, '..', 'asset', 'qr.jpg'); 
 
   // ==========================================
   // 💎 1. INITIAL PREMIUM GATEWAY MENU (/premium)
