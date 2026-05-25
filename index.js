@@ -178,6 +178,46 @@ bot.onText(/\/checkdb/, (msg) => {
 });
 
 // =========================================
+// 📸 PREMIUM PAYMENT SCREENSHOT RECEIVER
+// =========================================
+bot.on("photo", async (msg) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const username = msg.from.username ? `@${msg.from.username}` : "No Username";
+
+  // Check karo agar user ne photo ke saath kuch caption likha hai ya premium context chal raha hai
+  const caption = msg.caption ? msg.caption.toLowerCase() : "";
+
+  // Aap yahan ek simple check rakh sakte hain ya har photo par admin ko alert bhej sakte hain
+  if (caption.includes("pay") || caption.includes("premium") || caption.includes("ss") || caption.includes("done")) {
+    
+    // 1. User ko confirmation bhejo
+    bot.sendMessage(chatId, "⏳ **Aapka payment screenshot receive ho gaya hai!**\nAdmin (VELIX) jald hi aapki transaction verify karke aapka Premium pack activate kar denge. Kripya thoda intezar karein. ⚔️");
+
+    // 2. ADMIN ALERTS (Apni Admin Chat ID yahan daal dena taaki aapko notification mile)
+    const ADMIN_CHAT_ID = "YOUR_TELEGRAM_USER_ID_HERE"; // 🚨 REPLCAE WITH YOUR ACTUAL TELEGRAM ID
+    
+    // Sabse high resolution waali photo uthao
+    const fileId = msg.photo[msg.photo.length - 1].file_id;
+
+    const adminMessage = 
+      `🚨 **NEW PREMIUM PAYMENT SUBMISSION** 🚨\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `👤 **User:** ${username}\n` +
+      `🆔 **ID:** \`${userId}\`\n` +
+      `📝 **Caption:** ${msg.caption || "None"}\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `Verify karke database mein manually ya command se crystals add karein!`;
+
+    try {
+      await bot.sendPhoto(ADMIN_CHAT_ID, fileId, { caption: adminMessage, parse_mode: "Markdown" });
+    } catch (err) {
+      console.log("❌ Admin ko screenshot bhejne mein error aaya:", err.message);
+    }
+  }
+});
+
+// =========================================
 // ⚙️ PLUG-AND-PLAY MODULAR ROUTE LOADER
 // =========================================
 const commandsPath = path.join(__dirname, "commands");
