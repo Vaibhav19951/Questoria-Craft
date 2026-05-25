@@ -108,8 +108,9 @@ bot.setMyCommands([
 
   { command: "profile", description: "View profile" },
   { command: "economy", description: "economy features" },
-    { command: "upgrade", description: "use essence" },
-    { command: "spin", description: "spin" }
+  { command: "upgrade", description: "use essence" },
+  { command: "spin", description: "spin" },
+  { command: "premium", description: "premium section" }
 ])
 .then(() => console.log("📜 Menu loaded"))
 .catch(err => console.log("❌ Menu error:", err.message));
