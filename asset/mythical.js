@@ -1,8 +1,14 @@
-const mythical = [
+/**
+ * VELIX OS V2.5 | CENTRAL MYTHICAL LIMITED ARCHETYPE REGISTRY
+ * Fully Aligned to Support Array Looping and Direct Object Key Mapping
+ */
+
+const mythicalArray = [
   {
     id: "tanjiro_limited",
     name: "Tanjiro Kamado [Sun Breathing Limited]",
     rarity: "Mythical Limited",
+    atk: 7000, // Aligned natively for the combat resolution engine
     power: 7000,
     cost: 2299,
     type: "mythical",
@@ -17,6 +23,7 @@ const mythical = [
     id: "nezuko_limited",
     name: "Nezuko Kamado [Demon Queen Limited]",
     rarity: "Mythical Limited",
+    atk: 6800,
     power: 6800,
     cost: 2299,
     type: "mythical",
@@ -31,6 +38,7 @@ const mythical = [
     id: "zenitsu_limited",
     name: "Zenitsu Agatsuma [Thunder God Limited]",
     rarity: "Mythical Limited",
+    atk: 6900,
     power: 6900,
     cost: 2499,
     type: "mythical",
@@ -45,6 +53,7 @@ const mythical = [
     id: "inosuke_limited",
     name: "Inosuke Hashibira [Beast King Limited]",
     rarity: "Mythical Limited",
+    atk: 6700,
     power: 6700,
     cost: 2499,
     type: "mythical",
@@ -59,6 +68,7 @@ const mythical = [
     id: "rengoku_limited",
     name: "Kyojuro Rengoku [Flame Emperor Limited]",
     rarity: "Mythical Limited",
+    atk: 7200,
     power: 7200,
     cost: 2899,
     type: "mythical",
@@ -73,6 +83,7 @@ const mythical = [
     id: "giyuu_limited",
     name: "Giyuu Tomioka [Dead Calm Limited]",
     rarity: "Mythical Limited",
+    atk: 7100,
     power: 7100,
     cost: 2699,
     type: "mythical",
@@ -87,6 +98,7 @@ const mythical = [
     id: "shinobu_limited",
     name: "Shinobu Kocho [Poison Empress Limited]",
     rarity: "Mythical Limited",
+    atk: 7000,
     power: 7000,
     cost: 2199,
     type: "mythical",
@@ -101,6 +113,7 @@ const mythical = [
     id: "tengen_limited",
     name: "Tengen Uzui [Sound Master Limited]",
     rarity: "Mythical Limited",
+    atk: 7300,
     power: 7300,
     cost: 2899,
     type: "mythical",
@@ -115,6 +128,7 @@ const mythical = [
     id: "muichiro_limited",
     name: "Muichiro Tokito [Mist Prodigy Limited]",
     rarity: "Mythical Limited",
+    atk: 7400,
     power: 7400,
     cost: 2999,
     type: "mythical",
@@ -129,6 +143,7 @@ const mythical = [
     id: "mitsuri_limited",
     name: "Mitsuri Kanroji [Love Blade Limited]",
     rarity: "Mythical Limited",
+    atk: 7100,
     power: 7100,
     cost: 2499,
     type: "mythical",
@@ -143,6 +158,7 @@ const mythical = [
     id: "obanai_limited",
     name: "Obanai Iguro [Serpent Curse Limited]",
     rarity: "Mythical Limited",
+    atk: 7250,
     power: 7250,
     cost: 2899,
     type: "mythical",
@@ -157,6 +173,7 @@ const mythical = [
     id: "sanemi_limited",
     name: "Sanemi Shinazugawa [Wind Fury Limited]",
     rarity: "Mythical Limited",
+    atk: 7600,
     power: 7600,
     cost: 3499,
     type: "mythical",
@@ -171,6 +188,7 @@ const mythical = [
     id: "akaza_limited",
     name: "Akaza [Blood Battle Limited]",
     rarity: "Mythical Limited",
+    atk: 7800,
     power: 7800,
     cost: 3699,
     type: "mythical",
@@ -185,6 +203,7 @@ const mythical = [
     id: "kokushibo_limited",
     name: "Kokushibo [Moon King Limited]",
     rarity: "Mythical Limited",
+    atk: 8500,
     power: 8500,
     cost: 3999,
     type: "mythical",
@@ -199,6 +218,7 @@ const mythical = [
     id: "muzan_limited",
     name: "Muzan Kibutsuji [Final Form Limited]",
     rarity: "Mythical Limited",
+    atk: 9000,
     power: 9000,
     cost: 10000,
     type: "mythical",
@@ -211,4 +231,15 @@ const mythical = [
   }
 ];
 
-module.exports = { mythical };
+// Creates a mapped key-value object automatically for single-target fetches
+const mythicalMap = {};
+mythicalArray.forEach(char => {
+  mythicalMap[char.id] = char;
+});
+
+// Dynamic double export structure for maximum codebase flexibility
+module.exports = {
+  mythical: mythicalArray, // Keeps backward compatibility with your specific destructuring export
+  mythicalMap: mythicalMap, // For super-fast direct lookups by character ID
+  mythicalArray: mythicalArray
+};
