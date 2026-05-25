@@ -28,11 +28,26 @@ const bot = new TelegramBot(TOKEN, {
 });
 
 // =========================================
+// 📦 GLOBAL ASSET MEMORY BRIDGE (Zero Disk I/O Overload)
+// =========================================
+// Direct paths pointing safely to your centralized data schemas
+try {
+  global.VELIX_ASSETS = {
+    demons: require("./commands/demons.js"), 
+    weapons: require("./commands/weapons.js"), 
+    mythical: require("./commands/mythical.js"),
+    godTier: require("./commands/godtier.js")
+  };
+  console.log("✅ [ASSETS SYNCED]: Global Master registries bound to memory stream.");
+} catch (assetErr) {
+  console.log("⚠️  [ASSET LINK WARNING]: Some asset files were missing during boot sequence:", assetErr.message);
+}
+
+// =========================================
 // 📂 CENTRALIZED DATABASE SYSTEM (Highly Optimized for 2000+ Users)
 // =========================================
 const dbPath = path.join(process.cwd(), "data", "players.json");
 
-// Ensure data folder and players.json exist safely
 if (!fs.existsSync(path.dirname(dbPath))) {
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 }
@@ -48,7 +63,7 @@ bot.getPlayerData = (userId) => {
     const data = fs.readFileSync(dbPath, "utf8");
     const json = JSON.parse(data || "{}");
     
-    // Default template if player profile doesn't exist
+    // Aligned Player Blueprint matching all asset systems (Cards + Arsenal + Currency)
     if (!json[userId]) {
       json[userId] = {
         coins: 500,
@@ -56,11 +71,23 @@ bot.getPlayerData = (userId) => {
         level: 1,
         exp: 0,
         essence: 0,
-        owned_characters: [],
+        owned_characters: [], // For regular, God-tier, and Mythical Cards
+        owned_weapons: [],    // 🚨 FIXED: Prevented crash on weapon acquisition hooks
+        equipped_weapon: null, // Track currently active weapon stats
         last_daily: 0,
         last_work: 0
       };
       fs.writeFileSync(dbPath, JSON.stringify(json, null, 2), "utf8");
+    } else {
+      // 🚨 AUTOMATIC PATCH-UP RUNTIME: Ensures older users also get new array keys safely!
+      let structuralUpdate = false;
+      if (!json[userId].owned_weapons) { json[userId].owned_weapons = []; structuralUpdate = true; }
+      if (json[userId].equipped_weapon === undefined) { json[userId].equipped_weapon = null; structuralUpdate = true; }
+      if (json[userId].essence === undefined) { json[userId].essence = 0; structuralUpdate = true; }
+      
+      if (structuralUpdate) {
+        fs.writeFileSync(dbPath, JSON.stringify(json, null, 2), "utf8");
+      }
     }
     return json[userId];
   } catch (err) {
@@ -89,7 +116,6 @@ bot.savePlayerData = (userId, updatedData) => {
 // 🛡️ ANTI-CRASH & POLLING ERROR SHIELD
 // =========================================
 bot.on("polling_error", (error) => {
-  // Safe handling of 409 conflict or network packets drop on StackHost
   if (error.message.includes("409 Conflict")) {
     console.log("⚠️  Polling Conflict detected. Resolving active duplicate threads...");
   } else {
@@ -121,8 +147,10 @@ bot.onText(/\/checkdb/, (msg) => {
       `📍 **Active Registry:** \`players.json\`\n` +
       `👤 **Target Account:** \`${targetUser}\`\n\n` +
       `💰 **Current Coins Ledger:** ${player.coins} Coins\n` +
+      `🔮 **Pure Essence Stash:** ${player.essence || 0} Essence\n` +
       `📈 **Current Power Level:** Tier ${player.level}\n` +
-      `🎒 **Inventory Assets:** ${player.owned_characters.length} Cards Sync'd\n` +
+      `🎒 **Cards Asset Synchronization:** ${player.owned_characters.length} Sync'd\n` +
+      `⚔️ **Weapons Vault Inventory:** ${player.owned_weapons ? player.owned_weapons.length : 0} Equipped/Owned\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
       `✅ *Database status functional and fully linked to core engine.*`;
     bot.sendMessage(chatId, layout, { parse_mode: "Markdown" });
@@ -140,15 +168,15 @@ if (fs.existsSync(commandsPath)) {
   const files = fs.readdirSync(commandsPath).filter(f => f.endsWith(".js"));
 
   for (const file of files) {
-    // Smooth exclusion filter to prevent assets loading as code lines
-    if (["assets.js", "mythical.js", "weapon.js", "weapons.js", "demons.js", "godchar.js"].includes(file)) {
+    // Exclusion filter updated to ensure your modified asset configurations do not trigger route initializers
+    if (["assets.js", "mythical.js", "weapon.js", "weapons.js", "demons.js", "godchar.js", "godtier.js"].includes(file)) {
       continue; 
     }
 
     try {
       const cmd = require(`./commands/${file}`);
       if (typeof cmd === "function") {
-        cmd(bot); // Passes optimized bot parameters down cleanly
+        cmd(bot); 
         console.log(`🦅 [LOADED SUCCESS] Matrix Node Linked: ${file}`);
       } else {
         console.log(`⚠️  [SKIPPED ENGINE] Non-executable structure: ${file}`);
