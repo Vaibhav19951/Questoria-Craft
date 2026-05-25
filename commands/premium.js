@@ -1,22 +1,22 @@
 /**
- * VELIX OS V2.6 | AUTOMATED PREMIUM PAYMENT GATEWAY
- * QR Based Payment + Manual Approve System
- * Fully Synced with godchar.js Registry
+ * VELIX OS V2.7 | PREMIUM PAYMENT GATEWAY
+ * QR + Live Timer + Manual Approval System
  */
 
 const fs = require('fs');
 const path = require('path');
+
 const godTierRegistry = require("../asset/godchar");
 const godCharManifest = godTierRegistry.godTierManifest || {};
 
-console.log("💎 [LOADED SUCCESS] Premium Gateway Synced: premium.js");
+console.log("💎 PREMIUM SYSTEM LOADED: premium.js");
 
 module.exports = (bot) => {
 
   const ADMIN_ID = '2086993762';
 
   // ==========================================
-  // 💳 PREMIUM PRICE DATABASE
+  // 💳 PRICE DATABASE
   // ==========================================
   const premiumPriceChart = {
 
@@ -39,38 +39,39 @@ module.exports = (bot) => {
     },
 
     yoriichi_essence_pack: {
-      name: "Yoriichi God-Char Essence x50 + Blessing x5",
+      name: "Yoriichi Essence x50 + Blessing x5",
       price: "₹249",
       type: "material",
       target: "yoriichi_godtier"
     },
 
     muzan_essence_pack: {
-      name: "Muzan God-Char Essence x50 + Blessing x5",
+      name: "Muzan Essence x50 + Blessing x5",
       price: "₹199",
       type: "material",
       target: "muzan_godtier"
     },
 
     kokushibo_essence_pack: {
-      name: "Kokushibo God-Char Essence x50 + Blessing x5",
+      name: "Kokushibo Essence x50 + Blessing x5",
       price: "₹149",
       type: "material",
       target: "kokushibo_godtier"
     },
 
     universal_awakening_stone: {
-      name: "Universal Awakening Catalyst Stone x1",
+      name: "Universal Awakening Stone x1",
       price: "₹99",
       type: "universal"
     }
 
   };
 
-  const LOCAL_QR_PATH = path.join(process.cwd(), 'asset', 'qr.jpg');
+  const LOCAL_QR_PATH =
+    path.join(process.cwd(), 'asset', 'qr.jpg');
 
   // ==========================================
-  // 👑 PREMIUM COMMAND
+  // 👑 /premium
   // ==========================================
   bot.onText(/\/premium/, async (msg) => {
 
@@ -79,39 +80,37 @@ module.exports = (bot) => {
 
     bot.getPlayerData(userId);
 
-    const opts = {
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: '✨ Essence & Blessings',
-              callback_data: 'prem_shop_essence'
-            },
-            {
-              text: '👑 God-Char Cards',
-              callback_data: 'prem_view_godtier'
-            }
-          ]
-        ]
-      }
-    };
-
     await bot.sendMessage(
       chatId,
-      `👑 *VELIX OS | GOD SLAYER PREMIUM NETWORK*\n` +
-      `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-      `Welcome to the premium terminal.\n\n` +
-      `Choose a category below to continue.`,
+
+      `👑 *VELIX PREMIUM NETWORK*\n` +
+      `━━━━━━━━━━━━━━━━━━━\n\n` +
+      `Select a premium category below.`,
+
       {
         parse_mode: 'Markdown',
-        ...opts
+
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: '✨ Essence & Materials',
+                callback_data: 'prem_shop_essence'
+              },
+              {
+                text: '👑 God Cards',
+                callback_data: 'prem_view_godtier'
+              }
+            ]
+          ]
+        }
       }
     );
 
   });
 
   // ==========================================
-  // 🎮 CALLBACK HANDLER
+  // 🎮 CALLBACKS
   // ==========================================
   bot.on('callback_query', async (query) => {
 
@@ -120,53 +119,52 @@ module.exports = (bot) => {
     const data = query.data;
     const messageId = query.message.message_id;
 
-    if (!data.startsWith('prem_')) return;
+    if (!data.startsWith('prem')) return;
 
     try {
 
       // ==========================================
-      // 👑 VIEW GOD CARDS
+      // 👑 VIEW CARDS
       // ==========================================
       if (data === 'prem_view_godtier') {
 
-        await bot.answerCallbackQuery(query.id).catch(() => {});
+        await bot.answerCallbackQuery(query.id);
 
-        let godTierMenu =
-          `👑 *VELIX OS | GOD-TIER CARD VAULT*\n` +
-          `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+        let text =
+          `👑 *GOD CARD SHOP*\n` +
+          `━━━━━━━━━━━━━━━━━━━\n\n`;
 
-        Object.keys(godCharManifest).forEach(key => {
+        Object.keys(godCharManifest).forEach((key) => {
 
           const char = godCharManifest[key];
 
           if (!char) return;
-
-          if (
-            char.id === "godTierArray" ||
-            char.id === "godTierManifest"
-          ) return;
 
           const price =
             premiumPriceChart[key]
               ? premiumPriceChart[key].price
               : "₹499";
 
-          godTierMenu +=
-            `⚡ *${char.name}*\n` +
-            `🔹 Power: \`${char.power || char.atk || 4000}\`\n` +
-            `💳 Price: \`${price}\`\n\n`;
+          if (
+            char.id !== "godTierArray" &&
+            char.id !== "godTierManifest"
+          ) {
+
+            text +=
+              `⚡ *${char.name}*\n` +
+              `💥 Power: \`${char.power || char.atk || 4000}\`\n` +
+              `💳 Price: \`${price}\`\n\n`;
+
+          }
 
         });
 
-        godTierMenu +=
-          `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-          `Select a card below to purchase.`;
-
         return bot.sendMessage(
           chatId,
-          godTierMenu,
+          text,
           {
             parse_mode: 'Markdown',
+
             reply_markup: {
               inline_keyboard: [
                 [
@@ -193,26 +191,26 @@ module.exports = (bot) => {
       }
 
       // ==========================================
-      // ✨ VIEW ESSENCE SHOP
+      // ✨ MATERIAL SHOP
       // ==========================================
       if (data === 'prem_shop_essence') {
 
-        await bot.answerCallbackQuery(query.id).catch(() => {});
-
-        const materialMenu =
-          `✨ *VELIX OS | MATERIAL SHOP*\n` +
-          `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
-
-          `🧬 Yoriichi Pack ➜ \`₹249\`\n\n` +
-          `🧪 Muzan Pack ➜ \`₹199\`\n\n` +
-          `🌙 Kokushibo Pack ➜ \`₹149\`\n\n` +
-          `💎 Awakening Stone ➜ \`₹99\`\n`;
+        await bot.answerCallbackQuery(query.id);
 
         return bot.sendMessage(
           chatId,
-          materialMenu,
+
+          `✨ *MATERIAL SHOP*\n` +
+          `━━━━━━━━━━━━━━━━━━━\n\n` +
+
+          `🧬 Yoriichi Pack ➜ ₹249\n` +
+          `🧪 Muzan Pack ➜ ₹199\n` +
+          `🌙 Kokushibo Pack ➜ ₹149\n` +
+          `💎 Awakening Stone ➜ ₹99`,
+
           {
             parse_mode: 'Markdown',
+
             reply_markup: {
               inline_keyboard: [
                 [
@@ -243,11 +241,11 @@ module.exports = (bot) => {
       }
 
       // ==========================================
-      // 💳 QR PAYMENT GENERATOR
+      // 💳 BUY ITEM
       // ==========================================
       if (data.startsWith('prem_buy_')) {
 
-        await bot.answerCallbackQuery(query.id).catch(() => {});
+        await bot.answerCallbackQuery(query.id);
 
         const selectedAssetKey =
           data.replace('prem_buy_', '');
@@ -257,48 +255,42 @@ module.exports = (bot) => {
 
         if (!itemObj) return;
 
-        await bot.sendMessage(
-          chatId,
-          `🔥 *Selection Locked*\n\n` +
-          `📦 Item: *${itemObj.name}*\n` +
-          `💳 Amount: *${itemObj.price}*\n\n` +
-          `Generating secure payment QR...`,
-          {
-            parse_mode: 'Markdown'
-          }
-        );
-
         if (!fs.existsSync(LOCAL_QR_PATH)) {
-
-          console.error(
-            `❌ Missing QR File: ${LOCAL_QR_PATH}`
-          );
 
           return bot.sendMessage(
             chatId,
-            `❌ QR image missing from asset folder.`
+            `❌ qr.jpg missing in asset folder`
           );
 
         }
 
+        // ==========================================
+        // 📸 SEND QR
+        // ==========================================
         await bot.sendPhoto(
           chatId,
           fs.createReadStream(LOCAL_QR_PATH),
+
           {
             caption:
+
               `📸 *VELIX PAYMENT GATEWAY*\n` +
-              `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+              `━━━━━━━━━━━━━━━━━━━\n\n` +
 
               `📦 Item: *${itemObj.name}*\n` +
               `💳 Amount: *${itemObj.price}*\n\n` +
 
-              `1. Scan the QR code above.\n` +
-              `2. Complete the payment.\n` +
-              `3. Wait for the payment confirmation button.\n\n` +
+              `⏳ Payment Window: 2 Minutes\n\n` +
 
-              `⚠️ Your order will remain pending until approved by the owner.`,
+              `1. Scan QR\n` +
+              `2. Complete Payment\n` +
+              `3. Wait For Timer\n\n` +
+
+              `⚠️ Purchase remains pending until owner approval.`,
+
             parse_mode: 'Markdown'
           },
+
           {
             filename: 'qr.jpg',
             contentType: 'image/jpeg'
@@ -306,29 +298,63 @@ module.exports = (bot) => {
         );
 
         // ==========================================
-        // ⏳ WAITING MESSAGE AFTER 2 MINUTES
+        // ⏳ LIVE TIMER
         // ==========================================
-        setTimeout(async () => {
+        let timeLeft = 120;
+
+        const timerMsg = await bot.sendMessage(
+          chatId,
+          `⏳ Payment Timer: 02:00`
+        );
+
+        const countdown = setInterval(async () => {
+
+          timeLeft--;
+
+          const minutes = Math.floor(timeLeft / 60)
+            .toString()
+            .padStart(2, '0');
+
+          const seconds = (timeLeft % 60)
+            .toString()
+            .padStart(2, '0');
 
           try {
 
+            await bot.editMessageText(
+              `⏳ Payment Timer: ${minutes}:${seconds}`,
+              {
+                chat_id: chatId,
+                message_id: timerMsg.message_id
+              }
+            );
+
+          } catch {}
+
+          // ==========================================
+          // ✅ TIMER END
+          // ==========================================
+          if (timeLeft <= 0) {
+
+            clearInterval(countdown);
+
             await bot.sendMessage(
               chatId,
-              `⏳ *PAYMENT STATUS PENDING*\n` +
-              `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
 
-              `If you have completed the payment,\n` +
-              `click the button below to notify the administration team.\n\n` +
+              `✅ *Payment Window Finished*\n\n` +
+              `If payment has been completed,\n` +
+              `click below to notify the owner.`,
 
-              `The owner will manually verify and approve your purchase.`,
               {
                 parse_mode: 'Markdown',
+
                 reply_markup: {
                   inline_keyboard: [
                     [
                       {
                         text: '✅ I Have Paid',
-                        callback_data: `prem_paid_${selectedAssetKey}`
+                        callback_data:
+                          `prempaid_${selectedAssetKey}`
                       }
                     ]
                   ]
@@ -336,23 +362,26 @@ module.exports = (bot) => {
               }
             );
 
-          } catch (e) {
-            console.log(e.message);
           }
 
-        }, 120000);
+        }, 1000);
 
       }
 
       // ==========================================
-      // 🚨 USER PAYMENT NOTIFICATION
+      // 🚨 USER PRESSED I HAVE PAID
       // ==========================================
-      if (data.startsWith('prem_paid_')) {
+      if (data.startsWith('prempaid_')) {
 
-        await bot.answerCallbackQuery(query.id).catch(() => {});
+        await bot.answerCallbackQuery(
+          query.id,
+          {
+            text: "Payment Request Sent"
+          }
+        );
 
         const assetKey =
-          data.replace('prem_paid_', '');
+          data.replace('prempaid_', '');
 
         const itemObj =
           premiumPriceChart[assetKey];
@@ -364,10 +393,15 @@ module.exports = (bot) => {
             ? `@${query.from.username}`
             : query.from.first_name;
 
+        // ==========================================
+        // 🚨 SEND TO OWNER
+        // ==========================================
         await bot.sendMessage(
+
           ADMIN_ID,
+
           `🚨 *NEW PAYMENT REQUEST*\n` +
-          `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+          `━━━━━━━━━━━━━━━━━━━\n\n` +
 
           `👤 User: ${username}\n` +
           `🆔 User ID: \`${clickerId}\`\n\n` +
@@ -375,9 +409,11 @@ module.exports = (bot) => {
           `📦 Item: *${itemObj.name}*\n` +
           `💳 Amount: *${itemObj.price}*\n\n` +
 
-          `Approve or decline this transaction below.`,
+          `Approve or decline below.`,
+
           {
             parse_mode: 'Markdown',
+
             reply_markup: {
               inline_keyboard: [
                 [
@@ -386,6 +422,7 @@ module.exports = (bot) => {
                     callback_data:
                       `prem_approve_${clickerId}_${assetKey}`
                   },
+
                   {
                     text: '❌ Decline',
                     callback_data:
@@ -395,16 +432,24 @@ module.exports = (bot) => {
               ]
             }
           }
+
         );
 
+        // ==========================================
+        // ✅ USER MESSAGE
+        // ==========================================
         return bot.sendMessage(
+
           chatId,
+
           `✅ *Payment Notification Sent*\n\n` +
-          `Your request has been sent to the owner.\n` +
+          `The owner has been notified.\n` +
           `Please wait for approval.`,
+
           {
             parse_mode: 'Markdown'
           }
+
         );
 
       }
@@ -414,7 +459,7 @@ module.exports = (bot) => {
       // ==========================================
       if (data.startsWith('prem_approve_')) {
 
-        await bot.answerCallbackQuery(query.id).catch(() => {});
+        await bot.answerCallbackQuery(query.id);
 
         if (clickerId !== ADMIN_ID) return;
 
@@ -426,26 +471,12 @@ module.exports = (bot) => {
         const itemObj =
           premiumPriceChart[assetIdKey];
 
-        if (!itemObj) {
-
-          return bot.sendMessage(
-            chatId,
-            `❌ Invalid item key.`
-          );
-
-        }
+        if (!itemObj) return;
 
         const targetProfile =
           bot.getPlayerData(targetUserId);
 
-        if (!targetProfile) {
-
-          return bot.sendMessage(
-            chatId,
-            `❌ Target player not found.`
-          );
-
-        }
+        if (!targetProfile) return;
 
         if (!targetProfile.inventory)
           targetProfile.inventory = [];
@@ -454,7 +485,7 @@ module.exports = (bot) => {
           targetProfile.materials = {};
 
         // ==========================================
-        // 👑 CARD DELIVERY
+        // 👑 CARD
         // ==========================================
         if (itemObj.type === "card") {
 
@@ -468,6 +499,7 @@ module.exports = (bot) => {
 
             id: assetObj.id || assetIdKey,
             name: assetObj.name,
+
             rarity: "God-Tier",
 
             level: 1,
@@ -498,11 +530,12 @@ module.exports = (bot) => {
         }
 
         // ==========================================
-        // ✨ MATERIAL DELIVERY
+        // ✨ MATERIAL
         // ==========================================
         else if (itemObj.type === "material") {
 
-          const baseKey = itemObj.target;
+          const baseKey =
+            itemObj.target;
 
           const essenceKey =
             `${baseKey}_god_char_essence`;
@@ -511,33 +544,39 @@ module.exports = (bot) => {
             `${baseKey}_god_char_blessing`;
 
           targetProfile.materials[essenceKey] =
-            (parseInt(
-              targetProfile.materials[essenceKey],
-              10
-            ) || 0) + 50;
+            (
+              parseInt(
+                targetProfile.materials[essenceKey],
+                10
+              ) || 0
+            ) + 50;
 
           targetProfile.materials[blessingKey] =
-            (parseInt(
-              targetProfile.materials[blessingKey],
-              10
-            ) || 0) + 5;
+            (
+              parseInt(
+                targetProfile.materials[blessingKey],
+                10
+              ) || 0
+            ) + 5;
 
         }
 
         // ==========================================
-        // 💎 UNIVERSAL STONE DELIVERY
+        // 💎 UNIVERSAL
         // ==========================================
         else if (itemObj.type === "universal") {
 
           targetProfile.materials[
             "universal_awakening_stone"
           ] =
-            (parseInt(
-              targetProfile.materials[
-                "universal_awakening_stone"
-              ],
-              10
-            ) || 0) + 1;
+            (
+              parseInt(
+                targetProfile.materials[
+                  "universal_awakening_stone"
+                ],
+                10
+              ) || 0
+            ) + 1;
 
         }
 
@@ -547,35 +586,41 @@ module.exports = (bot) => {
         );
 
         // ==========================================
-        // 🎉 USER SUCCESS MESSAGE
+        // 🎉 USER SUCCESS
         // ==========================================
         await bot.sendMessage(
+
           targetUserId,
+
           `🎉 *PAYMENT APPROVED*\n` +
-          `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+          `━━━━━━━━━━━━━━━━━━━\n\n` +
 
-          `Your payment for *${itemObj.name}* has been approved.\n\n` +
+          `Your purchase has been approved.\n\n` +
 
-          `The rewards were successfully added to your account.`,
+          `📦 Reward Delivered:\n` +
+          `*${itemObj.name}*`,
+
           {
             parse_mode: 'Markdown'
           }
+
         ).catch(() => {});
 
         // ==========================================
         // ✅ OWNER PANEL UPDATE
         // ==========================================
         return bot.editMessageText(
-          `✅ *PAYMENT APPROVED*\n` +
-          `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
 
+          `✅ *PAYMENT APPROVED*\n\n` +
           `👤 User ID: \`${targetUserId}\`\n` +
           `📦 Delivered: *${itemObj.name}*`,
+
           {
             chat_id: chatId,
             message_id: messageId,
             parse_mode: 'Markdown'
           }
+
         ).catch(() => {});
 
       }
@@ -585,7 +630,7 @@ module.exports = (bot) => {
       // ==========================================
       if (data.startsWith('prem_reject_')) {
 
-        await bot.answerCallbackQuery(query.id).catch(() => {});
+        await bot.answerCallbackQuery(query.id);
 
         if (clickerId !== ADMIN_ID) return;
 
@@ -593,35 +638,38 @@ module.exports = (bot) => {
           data.split('_')[2];
 
         await bot.sendMessage(
+
           targetUserId,
-          `❌ *PAYMENT DECLINED*\n` +
-          `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
 
-          `Your payment request was declined by the owner.\n\n` +
+          `❌ *PAYMENT DECLINED*\n\n` +
+          `Your payment request was declined.`,
 
-          `Please contact support if you believe this was a mistake.`,
           {
             parse_mode: 'Markdown'
           }
+
         ).catch(() => {});
 
         return bot.editMessageText(
+
           `❌ *PAYMENT DECLINED*\n\n` +
           `👤 User ID: \`${targetUserId}\``,
+
           {
             chat_id: chatId,
             message_id: messageId,
             parse_mode: 'Markdown'
           }
+
         ).catch(() => {});
 
       }
 
-    } catch (error) {
+    } catch (err) {
 
-      console.error(
-        "❌ Premium System Error:",
-        error
+      console.log(
+        "❌ PREMIUM ERROR:",
+        err.message
       );
 
     }
