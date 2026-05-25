@@ -11,6 +11,9 @@
     "node-telegram-bot-api": "^0.66.0",
     "dotenv": "^16.4.5"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "author": "VELIX",
   "license": "ISC"
 }
