@@ -1,7 +1,7 @@
 /**
  * VELIX OS V2.5 - AUTOMATED CORPS ECONOMY MODULE
  * Optimized for High-Concurrency Traffic (2000+ Users)
- * Fully Linked with Centralized Ledger System
+ * 🚨 FIXED: Aligned perfectly with core schema (inventory & mythicalCrystals)
  */
 
 module.exports = (bot) => {
@@ -15,10 +15,10 @@ module.exports = (bot) => {
         const player = bot.getPlayerData(userId);
         if (!player) return;
 
-        // Fallback variables for extra security against undefined errors
-        const crystals = player.crystals !== undefined ? player.crystals : 0;
+        // 🚨 FIXED: Fallback variables mapped precisely to index.js configuration keys
+        const crystals = player.mythicalCrystals !== undefined ? player.mythicalCrystals : 0;
         const essence = player.essence !== undefined ? player.essence : 0;
-        const ownedChars = player.owned_characters ? player.owned_characters.length : 0;
+        const ownedChars = player.inventory ? player.inventory.length : 0;
 
         const report = 
             `🏮 **VELIX OS | SLAYER FINANCIAL REGISTRY** 🏮\n` +
@@ -45,7 +45,6 @@ module.exports = (bot) => {
         const player = bot.getPlayerData(userId);
         if (!player) return;
 
-        // Ensure last_work property exists safely inside data framework
         if (!player.last_work) player.last_work = 0;
 
         if (now - player.last_work < cooldown) {
@@ -53,12 +52,10 @@ module.exports = (bot) => {
             return bot.sendMessage(chatId, `⏳ **Exhaustion Alert!**\n━━━━━━━━━━━━━━━━━━━━━\nSlayers need rest to preserve their Breathing Styles. Your stamina restores in \`${remaining}s\`.`);
         }
 
-        // Generate safe random values
         const payout = Math.floor(Math.random() * 80) + 50;
         player.coins += payout;
         player.last_work = now;
 
-        // Commit to central memory registry
         bot.savePlayerData(userId, player);
 
         const workSucessReport = 
@@ -82,7 +79,7 @@ module.exports = (bot) => {
         if (!player) return;
 
         if (!player.last_task) player.last_task = 0;
-        if (player.crystals === undefined) player.crystals = 0;
+        if (player.mythicalCrystals === undefined) player.mythicalCrystals = 0; // 🚨 FIXED KEY
 
         if (now - player.last_task < cooldown) {
             const remainingMs = cooldown - (now - player.last_task);
@@ -95,10 +92,9 @@ module.exports = (bot) => {
         const crystalReward = 2;
 
         player.coins += coinReward;
-        player.crystals += crystalReward;
+        player.mythicalCrystals += crystalReward; // 🚨 FIXED KEY
         player.last_task = now;
 
-        // Commit changes to central system files safely
         bot.savePlayerData(userId, player);
 
         const missionReport = 
@@ -122,12 +118,11 @@ module.exports = (bot) => {
         const player = bot.getPlayerData(userId);
         if (!player) return;
 
-        if (player.crystals === undefined) player.crystals = 0;
+        if (player.mythicalCrystals === undefined) player.mythicalCrystals = 0; // 🚨 FIXED KEY
 
         const direction = match[1] ? match[1].toLowerCase() : "";
         const amount = parseInt(match[2], 10);
 
-        // System Syntax Guard Clause
         if (!direction || !amount || amount <= 0) {
             const syntaxLayout = 
                 `❌ **INVALID EXCHANGE SYNTAX**\n` +
@@ -144,11 +139,9 @@ module.exports = (bot) => {
                 return bot.sendMessage(chatId, `❌ **INSUFFICIENT CAPITAL**\n━━━━━━━━━━━━━━━━━━━━━\nThis trade action requires 🪙 \`${cost}\` Crow Coins to authorize the transformation into 💎 \`${amount}\` Crystals.`);
             }
 
-            // Execute Ledger Adjustments
             player.coins -= cost;
-            player.crystals += amount;
+            player.mythicalCrystals += amount; // 🚨 FIXED KEY
 
-            // Save status safely
             bot.savePlayerData(userId, player);
 
             const conversionReport = 
