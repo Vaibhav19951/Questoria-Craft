@@ -8,6 +8,7 @@ const TelegramBot = require("node-telegram-bot-api");
 const fs = require("fs");
 const path = require("path");
 const askJarvis = require("./core/aiEngine");
+const aiCooldown = new Map();
 
 // =========================================
 // 🌐 SAFE TOKEN VALIDATION GATEWAY
@@ -183,7 +184,7 @@ bot.onText(/\/checkdb/, (msg) => {
     bot.sendMessage(chatId, layout, { parse_mode: "Markdown" });
   }
 });
-
+ 
 // =========================================
 // ⚡ JARVIS AI SYSTEM
 // =========================================
@@ -198,6 +199,27 @@ bot.on("message", async (msg) => {
 
   // Trigger word
   if (text.startsWith("jarvis ")) {
+
+    const userId = msg.from.id;
+    const now = Date.now();
+
+    // =========================================
+    // 🛡️ ANTI-SPAM COOLDOWN
+    // =========================================
+    if (aiCooldown.has(userId)) {
+
+      const lastUsed = aiCooldown.get(userId);
+
+      if (now - lastUsed < 10000) {
+
+        return bot.sendMessage(
+          msg.chat.id,
+          "⚠️ Wait a few seconds before using Jarvis again."
+        );
+      }
+    }
+
+    aiCooldown.set(userId, now);
 
     const prompt = msg.text.slice(7);
 
@@ -214,7 +236,7 @@ bot.on("message", async (msg) => {
 
     } catch (err) {
 
-      console.log("JARVIS MESSAGE ERROR:", err.message);
+      console.log("JARVIS MESSAGE ERROR:", err);
 
       bot.sendMessage(
         msg.chat.id,
