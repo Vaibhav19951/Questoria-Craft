@@ -7,7 +7,7 @@ const genAI = new GoogleGenerativeAI(
 );
 
 const model = genAI.getGenerativeModel({
-  model: "models/gemini-pro",
+  model: "models/gemini-1.5-flash-latest",
 });
 
 async function askJarvis(prompt) {
