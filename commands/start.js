@@ -51,7 +51,6 @@ module.exports = (bot) => {
     // 🚀 /START (PM ONLY)
     // =========================
     bot.onText(/\/start/, async (msg) => {
-
         const chatId = msg.chat.id;
         const userId = msg.from.id.toString();
 
@@ -67,7 +66,7 @@ module.exports = (bot) => {
 
         const isMember = await checkMembership(userId);
 
-        // ❌ NOT MEMBER → ONLY SHOW JOIN SCREEN (NO ACCESS DENY)
+        // ❌ NOT MEMBER → ONLY SHOW JOIN SCREEN
         if (!isMember) {
             return bot.sendMessage(chatId,
                 `⚔️ *WELCOME SLAYER*\n\n` +
@@ -104,7 +103,6 @@ module.exports = (bot) => {
     // 🔘 CALLBACK HANDLER
     // =========================
     bot.on("callback_query", async (query) => {
-
         const data = query.data;
         const chatId = query.message.chat.id;
         const messageId = query.message.message_id;
@@ -116,12 +114,12 @@ module.exports = (bot) => {
         // 🟢 JOIN VERIFY
         // =========================
         if (data.startsWith("start_join_verify:")) {
-
             const originalId = data.split(":")[1];
 
+            // Make sure the person clicking is the actual person who typed /start
             if (originalId !== callerId) {
                 return bot.answerCallbackQuery(query.id, {
-                    text: "Access denied!",
+                    text: "This button belongs to someone else!",
                     show_alert: true
                 });
             }
@@ -153,55 +151,55 @@ module.exports = (bot) => {
         // =========================
         // ⚔️ CHARACTER SELECT
         // =========================
-        if (!data.startsWith("start_char:")) return;
+        if (data.startsWith("start_char:")) {
+            const [, char, ownerId] = data.split(":");
 
-        const [, char, ownerId] = data.split(":");
-
-        if (callerId !== ownerId) {
-            return bot.answerCallbackQuery(query.id, {
-                text: "This menu is not yours!",
-                show_alert: true
-            });
-        }
-
-        if (db[callerId]?.character) {
-            return bot.answerCallbackQuery(query.id, {
-                text: "Already registered!",
-                show_alert: true
-            });
-        }
-
-        const name = char === "tanjiro" ? "Tanjiro" : "Nezuko";
-
-        db[callerId] = {
-            username: msg?.from?.username || "Slayer",
-            coins: 1000,
-            bank: 0,
-            crystals: 5,
-            mythic: 0,
-            level: 1,
-            xp: 0,
-            character: name,
-            inventory: [name],
-            owned_weapons: [],
-            materials: {},
-            guildId: null,
-            lastWork: 0,
-            lastTask: 0
-        };
-
-        saveDB(db);
-
-        await bot.deleteMessage(chatId, messageId).catch(() => {});
-
-        return bot.sendPhoto(chatId,
-            char === "tanjiro" ? TANJIRO_IMG : NEZUKO_IMG,
-            {
-                caption:
-                    `✅ REGISTRATION COMPLETE\n\n` +
-                    `Character: ${name}\nCoins: 1000\nCrystals: 5\n\n` +
-                    `Use /balance to start!`
+            if (callerId !== ownerId) {
+                return bot.answerCallbackQuery(query.id, {
+                    text: "This menu is not yours!",
+                    show_alert: true
+                });
             }
-        );
+
+            if (db[callerId]?.character) {
+                return bot.answerCallbackQuery(query.id, {
+                    text: "Already registered!",
+                    show_alert: true
+                });
+            }
+
+            const name = char === "tanjiro" ? "Tanjiro" : "Nezuko";
+
+            db[callerId] = {
+                username: query.from.username || "Slayer", // ✨ FIXED: Changed msg to query
+                coins: 1000,
+                bank: 0,
+                crystals: 5,
+                mythic: 0,
+                level: 1,
+                xp: 0,
+                character: name,
+                inventory: [name],
+                owned_weapons: [],
+                materials: {},
+                guildId: null,
+                lastWork: 0,
+                lastTask: 0
+            };
+
+            saveDB(db);
+
+            await bot.deleteMessage(chatId, messageId).catch(() => {});
+
+            return bot.sendPhoto(chatId,
+                char === "tanjiro" ? TANJIRO_IMG : NEZUKO_IMG,
+                {
+                    caption:
+                        `✅ REGISTRATION COMPLETE\n\n` +
+                        `Character: ${name}\nCoins: 1000\nCrystals: 5\n\n` +
+                        `Use /balance to start!`
+                }
+            );
+        }
     });
 };
