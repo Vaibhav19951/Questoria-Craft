@@ -27,8 +27,9 @@ const saveDB = (data) => {
 // =========================
 module.exports = (bot) => {
 
-    const GC_LINK = "https://t.me/Aapka_Group_Link_Yahan";
-    const GC_CHAT_ID = -1001234567890; // <-- REAL GROUP ID DAALNA
+    // 📢 CONFIGURATION (Yahan apne group ki sahi details daalo)
+    const GC_LINK = "https://t.me/demon_slayer_bot_kun"; // <-- ❌ Apne group ka asli link dalo
+    const GC_CHAT_ID = -1003763305227; // <-- ❌ Apne group ki asli numeric id dalo (-100 se shuru hoti hai)
 
     const START_IMG = "https://i.pinimg.com/736x/e1/97/3e/e1973e8421e69bc09f731b60f5102d97.jpg";
     const TANJIRO_IMG = "https://i.pinimg.com/736x/ab/26/81/ab26817caf5dbd8bd82f698f517649b7.jpg";
@@ -59,24 +60,24 @@ module.exports = (bot) => {
 
         let db = getDB();
 
-        // already registered
+        // Already registered check
         if (db[userId]?.character) {
             return bot.sendMessage(chatId, `⚠️ You already selected: ${db[userId].character}`);
         }
 
         const isMember = await checkMembership(userId);
 
-        // ❌ NOT MEMBER → ONLY SHOW JOIN SCREEN
+        // ❌ NOT MEMBER → SHOW MAIN GROUP JOIN SCREEN
         if (!isMember) {
             return bot.sendMessage(chatId,
                 `⚔️ *WELCOME SLAYER*\n\n` +
-                `To begin your journey, join our official guild first.\n\n` +
+                `To begin your journey, join our official main group first.\n\n` +
                 `After joining, click below to continue.`,
                 {
                     parse_mode: "Markdown",
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: "🌐 Join Guild", url: GC_LINK }],
+                            [{ text: "💬 Join Main Group", url: GC_LINK }],
                             [{ text: "🟢 I Have Joined", callback_data: `start_join_verify:${userId}` }]
                         ]
                     }
@@ -116,8 +117,10 @@ module.exports = (bot) => {
         if (data.startsWith("start_join_verify:")) {
             const originalId = data.split(":")[1];
 
-            // Make sure the person clicking is the actual person who typed /start
-            if (originalId !== callerId) {
+            // Safety fallback: Agar originalId fetch nahi ho pa rahi, toh callerId ko use karega dashboard error hatane ke liye
+            const targetId = originalId && originalId !== "undefined" ? originalId : callerId;
+
+            if (targetId !== callerId) {
                 return bot.answerCallbackQuery(query.id, {
                     text: "This button belongs to someone else!",
                     show_alert: true
@@ -128,13 +131,15 @@ module.exports = (bot) => {
 
             if (!isMember) {
                 return bot.answerCallbackQuery(query.id, {
-                    text: "❌ Join the guild first!",
+                    text: "❌ Please join the main group first!",
                     show_alert: true
                 });
             }
 
+            // Purane confirmation ko delete karo safely
             await bot.deleteMessage(chatId, messageId).catch(() => {});
 
+            // Verification success hone ke baad character panel bhej rahe hain
             return bot.sendPhoto(chatId, START_IMG, {
                 caption: "✅ VERIFIED! Choose your path:",
                 reply_markup: {
@@ -154,7 +159,9 @@ module.exports = (bot) => {
         if (data.startsWith("start_char:")) {
             const [, char, ownerId] = data.split(":");
 
-            if (callerId !== ownerId) {
+            const targetOwnerId = ownerId && ownerId !== "undefined" ? ownerId : callerId;
+
+            if (callerId !== targetOwnerId) {
                 return bot.answerCallbackQuery(query.id, {
                     text: "This menu is not yours!",
                     show_alert: true
@@ -171,7 +178,7 @@ module.exports = (bot) => {
             const name = char === "tanjiro" ? "Tanjiro" : "Nezuko";
 
             db[callerId] = {
-                username: query.from.username || "Slayer", // ✨ FIXED: Changed msg to query
+                username: query.from.username || "Slayer",
                 coins: 1000,
                 bank: 0,
                 crystals: 5,
